@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APS Automation API — Capability Explorer</title>
+<style>
+  :root {
+    --font-sans: Arial, sans-serif;
+    --font-mono: "Courier New", monospace;
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f5f5f5;
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #555555;
+    --color-text-tertiary: #888888;
+    --color-border-tertiary: rgba(0,0,0,0.12);
+    --color-border-secondary: rgba(0,0,0,0.22);
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-background-primary: #1e1e1e;
+      --color-background-secondary: #2a2a2a;
+      --color-text-primary: #e8e8e8;
+      --color-text-secondary: #aaaaaa;
+      --color-text-tertiary: #777777;
+      --color-border-tertiary: rgba(255,255,255,0.12);
+      --color-border-secondary: rgba(255,255,255,0.22);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    padding: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .page-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+  }
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: 20px;
+  }
+  h2.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  .eng-tabs { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 0 16px; }
+  .etab { padding: 7px 14px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-secondary); font-size: 13px; cursor: pointer; transition: all .15s; font-family: var(--font-sans); }
+  .etab.active { border-width: 2px; font-weight: 500; }
+  .etab[data-e="AutoCAD"].active { border-color: #185FA5; background: #E6F1FB; color: #0C447C; }
+  .etab[data-e="Revit"].active { border-color: #0F6E56; background: #E1F5EE; color: #085041; }
+  .etab[data-e="Inventor"].active { border-color: #854F0B; background: #FAEEDA; color: #633806; }
+  .etab[data-e="3ds Max"].active { border-color: #993C1D; background: #FAECE7; color: #712B13; }
+  .etab[data-e="Fusion"].active { border-color: #534AB7; background: #EEEDFE; color: #3C3489; }
+  .legend-row { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 0 16px; align-items: center; font-size: 12px; color: var(--color-text-secondary); }
+  .lbadge { display: inline-flex; align-items: center; gap: 5px; }
+  .ldot { width: 10px; height: 10px; border-radius: 2px; }
+  .cat-section { margin-bottom: 18px; border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; }
+  .cat-header { padding: 9px 14px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 8px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .cap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0; }
+  .cap-card { padding: 11px 14px; border-right: 0.5px solid var(--color-border-tertiary); border-bottom: 0.5px solid var(--color-border-tertiary); cursor: pointer; transition: background .1s; }
+  .cap-card:hover { background: var(--color-background-secondary); }
+  .cap-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 3px; }
+  .cap-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 4px; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+  .badge-light { background: #EAF3DE; color: #27500A; }
+  .badge-medium { background: #FAEEDA; color: #633806; }
+  .badge-heavy { background: #FCEBEB; color: #791F1F; }
+  .badge-varies { background: #EEEDFE; color: #3C3489; }
+  .cap-desc { font-size: 11px; color: var(--color-text-secondary); line-height: 1.45; }
+  .detail-panel { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; margin-bottom: 18px; background: var(--color-background-primary); }
+  .dp-header { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .dp-close { cursor: pointer; font-size: 18px; color: var(--color-text-tertiary); line-height: 1; background: none; border: none; font-family: var(--font-sans); }
+  .dp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .dp-field label { font-size: 11px; color: var(--color-text-tertiary); display: block; margin-bottom: 3px; font-weight: 500; }
+  .dp-field p { font-size: 12px; color: var(--color-text-primary); line-height: 1.5; }
+  .dp-full { grid-column: 1 / -1; }
+  .source-tag { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 9px; border-radius: 10px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+  .ask-btn { margin-top: 12px; font-size: 12px; padding: 7px 14px; cursor: pointer; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans); }
+  .ask-btn:hover { background: var(--color-background-secondary); }
+  .stats-bar { display: flex; gap: 16px; padding: 0 0 14px; flex-wrap: wrap; }
+  .stat { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 14px; text-align: center; }
+  .stat-n { font-size: 20px; font-weight: 500; color: var(--color-text-primary); }
+  .stat-l { font-size: 11px; color: var(--color-text-secondary); margin-top: 1px; }
+  .mono-box { font-family: var(--font-mono); font-size: 11px; background: var(--color-background-secondary); padding: 6px 10px; border-radius: var(--border-radius-md); line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<p class="page-title">APS Automation API — Capability Explorer</p>
+<p class="page-subtitle">Phase 1: Capability Discovery · Neeraj Yedekar, Senior PM Developer Enablement · April 2026 · All capabilities sourced from official Autodesk documentation and GitHub</p>
+
+<h2 class="sr-only">APS Automation API capability explorer — browse all 5 engines and 90+ confirmed capabilities by category with compute weight and source details.</h2>
+
+<div class="eng-tabs" id="tabs">
+  <button class="etab active" data-e="Revit" onclick="setEngine('Revit',this)">Revit</button>
+  <button class="etab" data-e="AutoCAD" onclick="setEngine('AutoCAD',this)">AutoCAD</button>
+  <button class="etab" data-e="Inventor" onclick="setEngine('Inventor',this)">Inventor</button>
+  <button class="etab" data-e="3ds Max" onclick="setEngine('3ds Max',this)">3ds Max</button>
+  <button class="etab" data-e="Fusion" onclick="setEngine('Fusion',this)">Fusion</button>
+</div>
+
+<div class="stats-bar" id="stats"></div>
+
+<div class="legend-row">
+  <span style="font-weight:500;color:var(--color-text-primary)">Compute weight:</span>
+  <span class="lbadge"><span class="ldot" style="background:#639922"></span>Light</span>
+  <span class="lbadge"><span class="ldot" style="background:#BA7517"></span>Medium</span>
+  <span class="lbadge"><span class="ldot" style="background:#E24B4A"></span>Heavy</span>
+  <span class="lbadge"><span class="ldot" style="background:#7F77DD"></span>Varies</span>
+</div>
+
+<div id="detail-slot"></div>
+<div id="content"></div>
+
+<script>
+const DATA = {
+"Revit": {
+  color:"#0F6E56", bg:"#E1F5EE", text:"#085041",
+  scripting:"C# .NET (IExternalDBApplication — RevitAPI.dll only, no RevitAPIUI.dll)",
+  categories:[
+    {name:"File I/O", icon:"📂", caps:[
+      {name:"Open project file (RVT)",weight:"light",desc:"Open a Revit project file from OSS/ACC storage for read or write operations. File downloaded to working directory before engine starts.",inputs:"RVT",outputs:"—",mechanism:"C# — rvtApp.OpenDocumentFile(path)",source:"Multiple official Revit DA samples"},
+      {name:"Open Revit Cloud model (RCW)",weight:"light",desc:"Open a cloud-workshared Revit model directly in ACC using region + ProjectGuid + ModelGuid — no file download required. Requires 3-legged OAuth adsk3LeggedToken argument.",inputs:"ACC cloud model (C4RModel)",outputs:"—",mechanism:"C# — ModelPathUtils.ConvertCloudGUIDsToCloudPath(); rvtApp.OpenDocumentFile(cloudPath)",source:"APS blog: DA supports Revit Cloud Model; aps-revit-rcw-parameters-exchange"},
+      {name:"Open / create family file (RFA)",weight:"medium",desc:"Open an existing RFA for modification, or create a new parametric Revit family from a family template (.rft).",inputs:"RFA or RFT template",outputs:"RFA",mechanism:"C# — rvtApp.NewFamilyDocument(templatePath)",source:"aps-create-revit-family (window wizard)"},
+      {name:"Upgrade RVT / RFA version",weight:"medium",desc:"Open a file from an older Revit version in the current engine and save — automatically upgrading the file format. Supports bulk folder upgrades via parallel WorkItems.",inputs:"RVT/RFA (older version)",outputs:"RVT/RFA (upgraded)",mechanism:"C# — open with target engine version; engine auto-upgrades on open",source:"aps-upgrade-revit-files"},
+      {name:"Migrate Revit Cloud models between ACC projects",weight:"heavy",desc:"Move RCW models from one BIM360/ACC project to another, including version migration to Revit 2025 or 2026. Requires 3-legged OAuth for both source and destination.",inputs:"ACC source RCW model",outputs:"ACC destination RCW model",mechanism:"C# — RCW-specific migration logic; 3-legged token for both projects",source:"aps-revit-rcw-migrate-automation"},
+    ]},
+    {name:"Parameter operations", icon:"⚙", caps:[
+      {name:"Read element parameters",weight:"light",desc:"Read instance and type parameters (built-in, shared, project) from any Revit element — including name, value, unit type, and parameter group.",inputs:"RVT",outputs:"JSON / CSV / custom",mechanism:"C# — element.get_Parameter(BuiltInParameter.*); element.LookupParameter(name)",source:"aps-revit-file-parameters-exchange; Building Coder blog"},
+      {name:"Write / modify element parameters",weight:"light",desc:"Update instance or type parameter values on Revit elements — must be wrapped in a Revit Transaction. Drives geometry, naming, material, and metadata updates.",inputs:"RVT + data file",outputs:"RVT (modified)",mechanism:"C# — Transaction t = new Transaction(doc); element.get_Parameter().Set(value)",source:"aps-revit-file-parameters-exchange (Excel import path)"},
+      {name:"Export all parameters to Excel",weight:"light",desc:"Enumerate all elements in a model and export parameter values to an Excel spreadsheet for external review, data integration, or reporting. High-value narrow use case.",inputs:"RVT / RCW",outputs:"XLSX",mechanism:"C# — FilteredElementCollector + LookupParameter iteration",source:"aps-revit-file-parameters-exchange; aps-revit-rcw-parameters-exchange"},
+      {name:"Read / write shared parameters",weight:"light",desc:"Access shared parameter definitions (with GUIDs) across project or family documents. Enables cross-project parameter consistency and BIM data interoperability.",inputs:"RVT / RFA",outputs:"SPF / JSON",mechanism:"C# — DefinitionFile; ExternalDefinition; SharedParameterElement",source:"Autodesk support docs; Revit API Forum"},
+    ]},
+    {name:"Data extraction", icon:"📊", caps:[
+      {name:"Extract element properties (FilteredElementCollector)",weight:"light",desc:"Query and extract properties, geometry, relationships, and metadata from any element category (walls, doors, windows, rooms, MEP, structural). The most fundamental Revit DA capability.",inputs:"RVT",outputs:"JSON / CSV / XML",mechanism:"C# — FilteredElementCollector; OfClass(); OfCategory(BuiltInCategory.*)",source:"GitHub topic design-automation-revit; Building Coder; multiple samples"},
+      {name:"Extract schedule data",weight:"light",desc:"Access ViewSchedule objects to read rows and cell values — enabling extraction of quantity takeoffs, door schedules, room schedules, material takeoffs. Top developer use case.",inputs:"RVT",outputs:"CSV / Excel / JSON",mechanism:"C# — FilteredElementCollector for ViewSchedule; schedule.GetCellText(SectionType.Body, row, col)",source:"Building Coder (schedule API); Revit API Forum"},
+      {name:"Extract quantities for cost budgeting",weight:"light",desc:"Extract element quantities (areas, volumes, lengths, counts) from model and produce cost budget estimates for integration with external pricing databases.",inputs:"RVT",outputs:"JSON / Excel",mechanism:"C# — FilteredElementCollector; element geometry APIs; parameter reads",source:"GitHub sample: Extract quantities and create cost budgets"},
+      {name:"Extract Revit Assets to BIM360",weight:"light",desc:"Extract asset information from Revit elements and push directly to the BIM360 Assets module via Data Management API — enabling asset tracking and lifecycle management.",inputs:"RVT",outputs:"BIM360 Assets module",mechanism:"C# — FilteredElementCollector + BIM360 Assets API in onComplete webhook",source:"GitHub sample: Extract Revit Assets to BIM360"},
+      {name:"Export views to images (PNG / JPEG)",weight:"medium",desc:"Export 3D views, floor plans, sections, and elevations to raster images — useful for automated thumbnail generation, report illustration, and model snapshots.",inputs:"RVT",outputs:"PNG / JPEG",mechanism:"C# — ImageExportOptions; doc.ExportImage()",source:"Building Coder blog (nightly data extraction example)"},
+    ]},
+    {name:"Model creation", icon:"🏗", caps:[
+      {name:"Create Revit family from template",weight:"medium",desc:"Programmatically create a new parametric Revit family (RFA) from a family template (.rft) — defining geometry, parameters, family types, materials, and connector constraints.",inputs:"RFT (family template)",outputs:"RFA",mechanism:"C# — rvtApp.NewFamilyDocument(templatePath); FamilyManager; Extrusion/Sweep/Blend",source:"aps-create-revit-family (window wizard); Autodesk-Forge/forge-createfamily-revit"},
+      {name:"Create model elements",weight:"medium",desc:"Programmatically create new Revit model elements of any category — walls, floors, ceilings, rooms, structural members, MEP components. All creation requires a Transaction.",inputs:"RVT (base file)",outputs:"RVT (with new elements)",mechanism:"C# — Wall.Create(); Floor.Create(); Room placement; Transaction required",source:"SketchIt sample (walls + floors from SVG); Building Coder"},
+      {name:"Create new workshared cloud model",weight:"heavy",desc:"Create a brand-new Revit Cloud Worksharing (RCW) model directly in Automation — for automated project setup and template deployment workflows.",inputs:"RVT template",outputs:"New ACC RCW model",mechanism:"C# — Document.SaveAsCloudModel() (Revit 2021+ API)",source:"APS blog: DA supports Revit Cloud Model"},
+    ]},
+    {name:"Model modification", icon:"✏", caps:[
+      {name:"Modify existing model elements",weight:"medium",desc:"Update existing Revit elements — change geometry (move, resize), modify materials, reassign types, update location, modify constraints. Any Revit DB API operation available.",inputs:"RVT",outputs:"RVT (modified)",mechanism:"C# — Element.Location; element.ChangeTypeId(); Parameter.Set(); Transaction required",source:"DEV.to: Use Revit DA Update Model in ACC; multiple samples"},
+      {name:"Delete model elements",weight:"light",desc:"Programmatically delete elements by category, type, or element ID — e.g. remove placeholder content or purge outdated objects before re-population.",inputs:"RVT",outputs:"RVT (modified)",mechanism:"C# — doc.Delete(ElementId); Transaction required",source:"Building Coder blog; Revit API docs"},
+      {name:"Synchronize model with central (cloud)",weight:"medium",desc:"Synchronize changes back to the RCW central file. Use Data Management API PublishModel in the onComplete webhook — no Revit API for publishing.",inputs:"RCW model (in memory)",outputs:"Updated RCW central in ACC",mechanism:"C# — doc.SynchronizeWithCentral(); PublishModel via DM API in webhook",source:"aps-revit-rcw-parameters-exchange"},
+    ]},
+    {name:"Documentation & output", icon:"📄", caps:[
+      {name:"Export to IFC",weight:"medium",desc:"Export a Revit model to IFC format for BIM interoperability. Supports IFC2x3 and IFC4 export schemes.",inputs:"RVT",outputs:"IFC",mechanism:"C# — IFCExportOptions; doc.Export(folder, filename, options)",source:"bim42.com DA for Revit tutorial (RVT to IFC)"},
+      {name:"Export to DWG",weight:"medium",desc:"Export Revit views or the entire model to DWG format for downstream CAD workflows.",inputs:"RVT",outputs:"DWG",mechanism:"C# — DWGExportOptions; doc.Export()",source:"Revit API documentation"},
+      {name:"Plot / export sheets to PDF",weight:"medium",desc:"Programmatically print Revit sheets to PDF — enabling automated generation of construction documentation packages.",inputs:"RVT",outputs:"PDF",mechanism:"C# — PrintManager; ViewSheetSetting; doc.Print()",source:"Building Coder blog; Revit API Forum"},
+      {name:"Export schedules to custom formats",weight:"light",desc:"Read ViewSchedule data and output in company-specific formats (Excel, CSV, JSON) for ERP, cost management, or reporting system integration.",inputs:"RVT",outputs:"XLSX / CSV / JSON",mechanism:"C# — ViewSchedule.GetCellText(); custom serialization",source:"Building Coder (nightly data extraction example)"},
+    ]},
+    {name:"Agentic / MCP integration", icon:"🤖", caps:[
+      {name:"Revit automation via MCP server",weight:"varies",desc:"An AI assistant (Claude, VS Code Copilot) orchestrates Revit WorkItems via a Model Context Protocol (MCP) remote server wrapping the Automation API. Enables describe-and-do Revit workflows. Published Feb 2026 as a proof-of-concept.",inputs:"Natural language task + ACC model reference",outputs:"WorkItem result + modified RVT",mechanism:".NET MCP server (SSE); RevitAutomationTools; SSA token auth",source:"aps-sample-mcp-server-revit-automation (Feb 2026)"},
+    ]},
+  ]},
+
+"AutoCAD":{
+  color:"#185FA5", bg:"#E6F1FB", text:"#0C447C",
+  scripting:"C# .NET ObjectARX (AcDbMgd.dll), AutoLISP (core only — no vla-*), C++ CRX",
+  categories:[
+    {name:"File I/O", icon:"📂", caps:[
+      {name:"Open DWG file",weight:"light",desc:"Open an AutoCAD DWG file from OSS/BIM360 working directory for processing. File downloaded to working directory before engine starts.",inputs:"DWG",outputs:"—",mechanism:"C# — via AutoCAD core engine; AutoLISP — loadMaxFile",source:"Multiple AutoCAD DA samples; forge.learning tutorial"},
+      {name:"Create new DWG file",weight:"light",desc:"Create a brand-new DWG drawing from scratch — starting from a template (.dwt) or blank document.",inputs:"DWT (optional)",outputs:"DWG",mechanism:"C# — new Database(); db.SaveAs()",source:"AutoCAD API documentation"},
+      {name:"Save / export DWG or DXF",weight:"light",desc:"Save the modified or new DWG file to output, optionally in DXF format for interoperability.",inputs:"DWG (in memory)",outputs:"DWG / DXF",mechanism:"C# — db.SaveAs(); AutoLISP — (command \"SAVEAS\"); db.DxfOut()",source:"Multiple AutoCAD DA samples"},
+    ]},
+    {name:"DWG entity management", icon:"✏", caps:[
+      {name:"Create geometric entities",weight:"light",desc:"Programmatically create all drawing entity types: lines, arcs, circles, polylines, ellipses, splines, hatches, DBText, MText, dimensions, leaders.",inputs:"DWG",outputs:"DWG (with new entities)",mechanism:"C# — Line, Arc, Circle, Polyline, DBText, MText classes; AutoLISP — (entmake) or (command)",source:"AutoCAD API docs; forge.learning UpdateParam"},
+      {name:"Read / query existing entities",weight:"light",desc:"Traverse the entity database, filter by type or layer, read coordinates, text content, block attributes, and object properties.",inputs:"DWG",outputs:"JSON / text / custom",mechanism:"C# — BlockTable; ModelSpace iteration; AutoLISP — (ssget), (entget)",source:"AutoCAD API docs; TextExtractApp (2027 engine repo)"},
+      {name:"Modify existing entities",weight:"light",desc:"Update entity properties (position, color, layer, text content, geometry), or delete entities from the drawing database.",inputs:"DWG",outputs:"DWG (modified)",mechanism:"C# — entity.UpgradeOpen(); AutoLISP — (entmod), (entdel)",source:"forge.learning UpdateParam (canonical AutoCAD DA modify sample)"},
+    ]},
+    {name:"Layer & standards management", icon:"🗂", caps:[
+      {name:"Layer management",weight:"light",desc:"Create, rename, freeze, lock, or delete drawing layers. Set layer color, linetype, and lineweight. Enables automated CAD standards compliance.",inputs:"DWG",outputs:"DWG (modified)",mechanism:"C# — LayerTable; LayerTableRecord; AutoLISP — (command \"LAYER\")",source:"AutoCAD API docs"},
+      {name:"CAD Standards compliance checking",weight:"light",desc:"Check a DWG against defined CAD standards (layer naming, linetype usage, text styles, dimension styles) and report or auto-correct violations. Explicitly listed in official Autodesk Automation API docs.",inputs:"DWG + standards definition",outputs:"Compliance report + corrected DWG",mechanism:"C# — custom rules via entity enumeration; AutoLISP",source:"aps.autodesk.com/automation-apis (official Autodesk docs)"},
+    ]},
+    {name:"Block & attribute operations", icon:"🔷", caps:[
+      {name:"Insert blocks with attributes",weight:"light",desc:"Insert block references and set attribute values programmatically — e.g. insert a title block and populate project name, number, date fields.",inputs:"DWG + block definition",outputs:"DWG (with inserted blocks)",mechanism:"C# — BlockReference; AttributeReference; AutoLISP — (command \"INSERT\")",source:"AutoCAD API docs; title block pattern"},
+      {name:"Update title block attributes",weight:"light",desc:"Update attribute values in existing title blocks across multiple drawings — e.g. revision number, engineer name, date. One of the most-cited AutoCAD DA use cases in official docs.",inputs:"DWG (with title block)",outputs:"DWG (updated)",mechanism:"C# — BlockReference iteration; AttributeReference.TextString; AutoLISP — (ssget \"X\" '((0 . \"INSERT\")))",source:"aps.autodesk.com/automation-apis (explicitly listed); community"},
+      {name:"Extract block and attribute data",weight:"light",desc:"Enumerate all block insertions and extract their attribute values — useful for generating parts lists, title block registers, or drawing indexes.",inputs:"DWG",outputs:"CSV / JSON / Excel",mechanism:"C# — BlockReference; AttributeCollection; AutoLISP — (ssget) + (entget)",source:"TextExtractApp (AutoCAD 2027 engine repo)"},
+    ]},
+    {name:"Plotting & output", icon:"🖨", caps:[
+      {name:"Plot drawing to PDF",weight:"medium",desc:"Programmatically configure plot settings (paper size, scale, plot area, plot style) and print a DWG layout or model space to PDF. All settings must be provided programmatically — no interactive dialogs.",inputs:"DWG",outputs:"PDF",mechanism:"C# — PlotInfo; PlotSettings; PlotEngine; AutoLISP — (command \"-PLOT\")",source:"aps.autodesk.com/automation-apis (explicitly listed)"},
+      {name:"Export DWG to image (PNG/JPEG)",weight:"medium",desc:"Export AutoCAD drawing views or layouts to raster image formats for thumbnail generation or web display.",inputs:"DWG",outputs:"PNG / JPEG",mechanism:"C# — PlotEngine with raster device; AutoLISP EXPORT command",source:"AutoCAD API docs"},
+      {name:"Batch plot multiple drawings",weight:"medium",desc:"Submit multiple WorkItems in parallel — each processing a separate DWG — for large-scale batch plot operations across an entire drawing set.",inputs:"Multiple DWGs",outputs:"Multiple PDFs",mechanism:"Multiple parallel WorkItem submissions via REST API",source:"APS WorkItem parallel execution architecture"},
+      {name:"Purge unused objects",weight:"light",desc:"Programmatically purge unused block definitions, layers, linetypes, text styles from a DWG to reduce file size and clean up drawings. Explicitly listed in official Autodesk docs.",inputs:"DWG",outputs:"DWG (purged)",mechanism:"C# — db.Purge(); AutoLISP — (command \"PURGE\" \"ALL\" \"\" \"N\")",source:"aps.autodesk.com/automation-apis (explicitly listed)"},
+    ]},
+    {name:"Scripting", icon:"💻", caps:[
+      {name:"Run AutoLISP routines",weight:"light",desc:"Execute AutoLISP (.lsp/.fas) routines for drawing manipulation. Core AutoLISP functions only — no vla-*/ActiveX COM functions. No GUI or user interaction permitted.",inputs:"DWG + .lsp/.fas (in AppBundle)",outputs:"DWG / text / custom",mechanism:"AutoLISP (core functions only)",source:"forge.learning AutoLISP bundle structure; TextExtractApp (2027 repo)"},
+      {name:"Run .NET ObjectARX plugins",weight:"light",desc:"Load compiled C# or VB.NET plugins using the ObjectARX managed API. AutoCAD 2025 requires .NET 8; AutoCAD 2027 requires .NET 10. Migration from .NET Framework 4.8 required.",inputs:"DWG + .NET DLL (in AppBundle)",outputs:"DWG / custom",mechanism:"C# — AcDbMgd.dll; AcCoreMgd.dll; .NET 8 (2025) / .NET 10 (2027)",source:"forge.learning; AutoCAD 2027 engine blog"},
+      {name:"Run C++ ObjectARX plugins (CRX)",weight:"light",desc:"Load compiled C++ ObjectARX plugins (.crx) for high-performance DWG manipulation.",inputs:"DWG + .crx (in AppBundle)",outputs:"DWG / custom",mechanism:"C++ ObjectARX SDK",source:"forge.learning; AutoCAD 2027 engine blog"},
+    ]},
+  ]},
+
+"Inventor":{
+  color:"#854F0B", bg:"#FAEEDA", text:"#633806",
+  scripting:"C# .NET (Inventor Server API), iLogic (VB.NET rules embedded in documents)",
+  categories:[
+    {name:"File I/O", icon:"📂", caps:[
+      {name:"Open part file (IPT)",weight:"light",desc:"Open an Inventor part file for read, modification, or export. Downloaded to working directory from OSS/BIM360 before engine starts.",inputs:"IPT",outputs:"—",mechanism:"C# — InventorServer; appInv.Documents.Open(filePath)",source:"Multiple Inventor DA samples; aps-run-ilogic"},
+      {name:"Open assembly file (IAM)",weight:"light",desc:"Open an Inventor assembly including all referenced component files. All referenced IPT/IAM files must be present in the working directory.",inputs:"IAM + all referenced IPT/IAM",outputs:"—",mechanism:"C# — appInv.Documents.Open(iamPath)",source:"Inventor DA documentation; aps-run-ilogic"},
+      {name:"Open drawing file (IDW / DWG)",weight:"light",desc:"Open an Inventor drawing file for view generation, annotation, or export.",inputs:"IDW / DWG",outputs:"—",mechanism:"C# — appInv.Documents.Open(drawingPath)",source:"Inventor DA drawing samples; iLogic drawing blog"},
+      {name:"Bulk file migration / version upgrade",weight:"medium",desc:"Open Inventor files from an older version in the current engine and save, upgrading the file format. Scale via parallel WorkItems for mass migration of thousands of files.",inputs:"IPT/IAM (older version)",outputs:"IPT/IAM (upgraded)",mechanism:"C# — open with current engine; auto-upgrades on open",source:"aps.autodesk.com/automation-apis (explicitly listed use case)"},
+    ]},
+    {name:"Parametric operations", icon:"⚙", caps:[
+      {name:"Read user and model parameters",weight:"light",desc:"Read all user-defined, model, and reference parameters from a part or assembly — including name, value, unit, expression, and comment.",inputs:"IPT / IAM",outputs:"JSON / Excel / CSV",mechanism:"C# — PartComponentDefinition.Parameters; param.Name, param.Value",source:"aps-run-ilogic; mod-the-machine blog (Parameter object)"},
+      {name:"Write / modify user parameters",weight:"light",desc:"Change user parameter values to drive model geometry — the core of Inventor parametric automation. Value change triggers model regeneration.",inputs:"IPT/IAM + parameter data",outputs:"IPT/IAM (with updated geometry)",mechanism:"C# — param.Expression = newValue; triggers model update",source:"aps-run-ilogic (width/height update sample)"},
+      {name:"Execute iLogic rules",weight:"medium",desc:"Run iLogic rules embedded in documents or loaded from external .iLogicVb files. VB.NET-based rule language for parameter-driven design decisions. Desktop ActiveDocument not available — use ThisDoc.Document instead.",inputs:"IPT/IAM (with rules) + optional .iLogicVb file",outputs:"IPT/IAM (updated per rule logic)",mechanism:"C# — iLogicVb runtime; rule.Run(); iLogic Rule Exporter tool",source:"aps-run-ilogic; APS blog: prepare-iLogic-rules-for-DA"},
+      {name:"Manage model states (iPart / iAssembly)",weight:"light",desc:"Access and switch between iPart/iAssembly configurations and model states. Inventor 2026 adds write access to ModelStatesInEdit for flexible variant design workflows.",inputs:"IPT (iPart) / IAM (iAssembly)",outputs:"IPT/IAM or derived output",mechanism:"C# — ModelStates; iPart factory; 2026: ModelStatesInEdit, MemberEditScope",source:"Autodesk DevBlog 2026 (ModelStates write access)"},
+    ]},
+    {name:"BOM & data extraction", icon:"📊", caps:[
+      {name:"Query and export Bill of Materials",weight:"light",desc:"Access the full Inventor BOM API: query assembly component structure, override quantities, set BOM component types, and export structured/parts-only/all-parts BOM views. One of the highest-value Inventor DA use cases.",inputs:"IAM",outputs:"CSV / Excel / JSON / XML",mechanism:"C# — BOM object; BOMView; BOM.Export(); PartsList in drawing",source:"Inventor API help (BOM overview); design-consulting.com.au; official docs"},
+      {name:"Read iProperties (design metadata)",weight:"light",desc:"Read and write Inventor iProperties — author, description, part number, material, mass, revision, custom properties.",inputs:"IPT / IAM / IDW",outputs:"JSON / XML / Excel",mechanism:"C# — Document.PropertySets; iProperties collection",source:"Inventor API docs; Autodesk DevBlog 2026"},
+      {name:"Read mass properties",weight:"medium",desc:"Calculate and extract physical mass properties — mass, volume, surface area, center of gravity, moments of inertia.",inputs:"IPT / IAM",outputs:"JSON / custom",mechanism:"C# — PartComponentDefinition.MassProperties; AssemblyComponentDefinition.MassProperties",source:"Inventor API docs (mass properties)"},
+      {name:"Traverse assembly component hierarchy",weight:"light",desc:"Navigate the full assembly tree — access component occurrences, leaf occurrences (parts only), sub-assemblies, skeleton files, and positional references.",inputs:"IAM",outputs:"JSON / CSV (component list)",mechanism:"C# — AssemblyComponentDefinition.Occurrences; AllLeafOccurrences",source:"design-and-motion.net blog (Assembly hierarchy); Inventor API docs"},
+    ]},
+    {name:"Drawing generation", icon:"📐", caps:[
+      {name:"Create drawing views",weight:"medium",desc:"Create standard drawing views (base, projected, section, detail, isometric) on drawing sheets from a part or assembly.",inputs:"IPT or IAM",outputs:"IDW",mechanism:"C# — DrawingDocument; Sheet.DrawingViews.AddBaseView(); AddProjectedView(); AddSectionView()",source:"iLogic drawing automation (AU session); Inventor API docs"},
+      {name:"Create and populate drawing sheets",weight:"medium",desc:"Create new sheets, set size (A0–A4, ANSI), add title blocks, and manage sheet properties. Community reports confirm up to ~20 sheets per WorkItem in practice.",inputs:"IDW template or empty",outputs:"IDW",mechanism:"C# — DrawingDocument.Sheets; Sheet.Title; Sheet.DrawingViews",source:"Assembly hierarchy blog (20 automated drawings per session)"},
+      {name:"Add annotations, dimensions, parts lists",weight:"medium",desc:"Add drawing annotations (notes, balloons, revision tables), dimensions (linear, angular, radial), and parts lists (BOM table). Inventor 2026 adds sketch-based break lines and ID tag label placement APIs.",inputs:"IDW (with views)",outputs:"IDW (annotated)",mechanism:"C# — Dimension objects; PartsListObject; LeaderNote; RevisionTable",source:"Autodesk DevBlog 2026 (sketch break operations, ID tag placement)"},
+    ]},
+    {name:"Assembly operations", icon:"🔩", caps:[
+      {name:"Automate assembly simplification",weight:"heavy",desc:"New in Inventor 2026: use the Simplify environment API to programmatically simplify assembly geometry — reducing polygon count for downstream manufacturing validation or visualization.",inputs:"IAM",outputs:"IAM (simplified)",mechanism:"C# — SimplifyFeatures (Inventor 2026: ComponentDefinition.Features.SimplifyFeatures)",source:"Autodesk DevBlog 2026 (Simplify environment API announcement)"},
+    ]},
+    {name:"Format conversion", icon:"🔄", caps:[
+      {name:"Export to STEP",weight:"medium",desc:"Export Inventor part or assembly to STEP format (ISO 10303) for interoperability with other CAD systems.",inputs:"IPT / IAM",outputs:"STEP (.stp, .step)",mechanism:"C# — TranslatorAddIn; doc.SaveAs() with STEP translator",source:"Inventor API docs"},
+      {name:"Export to IFC4x3 (Inventor 2026+)",weight:"medium",desc:"New in Inventor 2026: export assemblies to IFC4x3, preserving assembly structure and metadata. Previously entire assemblies were flattened to a single solid — a major limitation now resolved.",inputs:"IAM",outputs:"IFC4x3",mechanism:"C# — IFC4x3 export translator (Inventor 2026); automate naming, folder output, classification",source:"Autodesk DevBlog 2026 (IFC4x3 announcement for Inventor API)"},
+      {name:"Export to OBJ, STL, SAT",weight:"medium",desc:"Export Inventor geometry to neutral 3D mesh formats: OBJ (visualization), STL (3D printing), SAT (ACIS kernel format).",inputs:"IPT / IAM",outputs:"OBJ / STL / SAT",mechanism:"C# — TranslatorAddIn; doc.SaveAs() with format translator",source:"Inventor API docs; APS Inventor DA documentation"},
+      {name:"Export to PDF",weight:"medium",desc:"Export Inventor drawing sheets to PDF for documentation distribution.",inputs:"IDW",outputs:"PDF",mechanism:"C# — PDF translator via PrintManager or SaveAs with PDF AddIn",source:"Inventor API docs"},
+    ]},
+  ]},
+
+"3ds Max":{
+  color:"#993C1D", bg:"#FAECE7", text:"#712B13",
+  scripting:"MAXScript (.ms — primary), Python, .NET (C#), C++ — broadest scripting support of any engine",
+  categories:[
+    {name:"File I/O & import", icon:"📂", caps:[
+      {name:"Open 3ds Max scene file",weight:"medium",desc:"Open an existing .MAX scene file from OSS/BIM360 working directory — loading all objects, materials, lights, cameras, animations, and modifier stacks.",inputs:"MAX",outputs:"—",mechanism:"MAXScript — loadMaxFile filePath; .NET — MaxInterfaces.COREInterface.LoadFromFile()",source:"forge.learning 3ds Max AppBundle guide; APS 3ds Max DA blog"},
+      {name:"Create / save MAX scene",weight:"light",desc:"Create a new 3ds Max scene from scratch or save a modified scene to the output directory.",inputs:"MAX (optional)",outputs:"MAX",mechanism:"MAXScript — saveMaxFile filePath",source:"forge.learning; APS 3ds Max DA docs"},
+      {name:"Import third-party 3D formats",weight:"medium",desc:"Import geometry and scene data from a large library of supported 3D formats — FBX, OBJ, DWG, DXF, DAE (Collada), STL, 3DS, and others.",inputs:"FBX / OBJ / DWG / DXF / DAE / STL / 3DS",outputs:"MAX scene",mechanism:"MAXScript — importFile filePath; format-specific import options",source:"3ds Max API docs; APS 3ds Max DA overview"},
+    ]},
+    {name:"3D geometry operations", icon:"🔷", caps:[
+      {name:"Create and modify geometry",weight:"medium",desc:"Create 3D geometry primitives (box, sphere, cylinder, plane) and modify geometry using editable mesh or editable poly — vertex/edge/face manipulation, sub-object editing.",inputs:"MAX or import formats",outputs:"MAX",mechanism:"MAXScript — Box(); Sphere(); convertTo mesh; polyOp.*",source:"3ds Max API docs; MAXScript reference"},
+      {name:"Apply non-destructive modifiers",weight:"medium",desc:"Apply modifiers (Bend, Twist, Noise, TurboSmooth, Shell, Symmetry, etc.) via the modifier stack — enabling non-destructive parametric geometry modifications.",inputs:"MAX",outputs:"MAX",mechanism:"MAXScript — addModifier obj (Bend()); .NET — MaxInterfaces",source:"3ds Max API docs; Wikipedia 3ds Max"},
+      {name:"Boolean operations",weight:"medium",desc:"Perform Boolean operations (Union, Subtraction, Intersection) between 3D objects — for geometry cleanup, hole creation, or combining shapes.",inputs:"MAX",outputs:"MAX",mechanism:"MAXScript — Boolean compound object; ProBoolean",source:"3ds Max API docs"},
+      {name:"Mesh optimization / simplification",weight:"heavy",desc:"Reduce polygon count of 3D meshes using ProOptimizer or MultiRes modifiers — essential for preparing models for real-time visualization, game engines, or web delivery.",inputs:"MAX / imported mesh formats",outputs:"MAX / export formats",mechanism:"MAXScript — ProOptimizer modifier; percentage vertex reduction",source:"APS 3ds Max DA overview (optimization explicitly mentioned)"},
+    ]},
+    {name:"Material & texture operations", icon:"🎨", caps:[
+      {name:"Assign and modify materials",weight:"light",desc:"Assign materials (Standard, Physical, Arnold) to scene objects; modify properties (color, reflectivity, roughness, metalness); create material libraries.",inputs:"MAX",outputs:"MAX",mechanism:"MAXScript — mat = StandardMaterial(); obj.material = mat",source:"3ds Max API docs; MAXScript reference"},
+      {name:"UV mapping and texture management",weight:"medium",desc:"Programmatically apply and modify UV mapping coordinates — planar, cylindrical, spherical, box projection; UV relaxation and unwrapping for texture baking workflows.",inputs:"MAX",outputs:"MAX",mechanism:"MAXScript — UVWMap modifier; uvwMap.maptype",source:"3ds Max API docs (UV texture workflow)"},
+    ]},
+    {name:"Rendering", icon:"🖼", caps:[
+      {name:"Batch render scene to image",weight:"heavy",desc:"Render 3D scenes to raster image outputs (PNG, JPEG, EXR, TGA, BMP) using the active renderer. The most compute-intensive operation in the entire Automation API — render time varies enormously by scene complexity, resolution, and renderer choice.",inputs:"MAX",outputs:"PNG / JPEG / EXR / TGA / BMP",mechanism:"MAXScript — render camera:activeCam output:bitmap",source:"APS 3ds Max DA overview (rendering explicitly listed)"},
+      {name:"Configure render settings",weight:"light",desc:"Set render parameters: output resolution, renderer choice (Arnold, ART, Scanline), camera selection, render passes, output file path and format.",inputs:"MAX",outputs:"Rendered image",mechanism:"MAXScript — renderers.current = Arnold_Renderer(); renderWidth/Height",source:"3ds Max API docs; MAXScript reference"},
+      {name:"Animation rendering (frame sequences)",weight:"heavy",desc:"Render multiple frames from an animated scene — enabling automated turntable animations, product preview videos, or design review animations as image sequences.",inputs:"MAX (with animation)",outputs:"Image sequence (PNG / JPEG / EXR)",mechanism:"MAXScript — animate on; render range:#range start:0 end:100",source:"3ds Max API docs"},
+    ]},
+    {name:"Scene & object management", icon:"🏗", caps:[
+      {name:"Scene object hierarchy manipulation",weight:"light",desc:"Access and modify the scene object hierarchy — parent/child relationships, group management, layer assignment, object visibility, transforms (position, rotation, scale).",inputs:"MAX",outputs:"MAX",mechanism:"MAXScript — obj.parent; group objects; setTransform; in layer; obj.isHidden",source:"3ds Max API docs; Scene Explorer API"},
+      {name:"Camera and light management",weight:"light",desc:"Create, modify, and position cameras and lights programmatically — set focal length, target point, light color, intensity, shadow settings for render preparation.",inputs:"MAX",outputs:"MAX",mechanism:"MAXScript — FreeCamera(); TargetCamera(); OmniLight(); light.rgb; light.multiplier",source:"3ds Max API docs"},
+    ]},
+    {name:"Format conversion", icon:"🔄", caps:[
+      {name:"Export to FBX",weight:"medium",desc:"Export 3ds Max scenes to FBX format for delivery to game engines (Unity, Unreal), visualization platforms, and downstream 3D workflows.",inputs:"MAX",outputs:"FBX",mechanism:"MAXScript — exportFile filePath using:FBXEXP",source:"3ds Max API docs"},
+      {name:"Export to OBJ, STL, DXF",weight:"medium",desc:"Export geometry to neutral 3D formats: OBJ (wavefront), STL (3D printing), DXF (AutoCAD interchange).",inputs:"MAX",outputs:"OBJ / STL / DXF",mechanism:"MAXScript — exportFile filePath using:ObjExp",source:"3ds Max API docs"},
+      {name:"Publish to web-ready formats",weight:"medium",desc:"Export or publish 3ds Max content for display in the Autodesk Viewer or third-party web platforms — enabling online product configurators. Typically chains DA output with the Model Derivative API.",inputs:"MAX",outputs:"SVF/SVF2 / glTF (via Model Derivative)",mechanism:"MAXScript export + Model Derivative API (client app)",source:"APS 3ds Max DA overview (publishing explicitly mentioned)"},
+    ]},
+    {name:"Scripting", icon:"💻", caps:[
+      {name:"Run MAXScript (.ms files)",weight:"varies",desc:"Execute MAXScript to orchestrate any 3ds Max operation. MAXScript is the primary automation interface for the 3ds Max DA engine. Can call .NET plugin classes via dotNetClass().",inputs:"MAX + .ms (in AppBundle)",outputs:"MAX or any export format",mechanism:"MAXScript — fileIn scriptPath; fn AutomationScript = ...",source:"forge.learning 3ds Max AppBundle guide (da_script.ms)"},
+      {name:"Run Python scripts",weight:"varies",desc:"Execute Python scripts in 3ds Max as an alternative to MAXScript for developers who prefer Python syntax.",inputs:"MAX + .py (in AppBundle)",outputs:"MAX or custom",mechanism:"Python — pymxs module",source:"forge.learning 3ds Max AppBundle guide (Python listed as supported)"},
+      {name:"Run .NET / C++ plugins",weight:"varies",desc:"Load compiled .NET (C#) or C++ plugins and execute automation via MAXScript's dotNetClass() binding.",inputs:"MAX + .NET DLL or C++ plugin (in AppBundle)",outputs:"MAX or custom",mechanism:"MAXScript — dotNetClass(\"Namespace.ClassName\"); da.Method()",source:"forge.learning 3ds Max guide (dotNetClass integration example)"},
+    ]},
+  ]},
+
+"Fusion":{
+  color:"#534AB7", bg:"#EEEDFE", text:"#3C3489",
+  scripting:"TypeScript ONLY on cloud (Python/C++ on desktop are NOT supported in cloud engine)",
+  categories:[
+    {name:"Data access", icon:"📂", caps:[
+      {name:"Read native Fusion designs (F3D)",weight:"light",desc:"Open and read native Fusion design files stored in a user's Fusion Team hub — accessing geometry, component structure, parameters, sketches, features, and assemblies.",inputs:"F3D (from Fusion Team hub)",outputs:"Custom output (JSON / file)",mechanism:"TypeScript — adsk.fusion.Design; RootComponent; BRepBodies; Sketches; Parameters",source:"APS Fusion beta blog (Feb 2025); Fusion Developer API docs"},
+      {name:"Read third-party CAD files",weight:"medium",desc:"Import and read CAD files from third-party formats supported by Fusion for analysis, conversion, or integration into Fusion designs.",inputs:"STEP / IGES / OBJ / STL / DXF / DWG",outputs:"F3D or analysis output",mechanism:"TypeScript — ImportManager; Fusion import utilities",source:"APS blog: 'Read and analyze native Fusion Designs or third-party CAD files'"},
+      {name:"Write / store to Fusion Team hub",weight:"light",desc:"Store automation outcomes directly back to the user's Fusion Team hub — ensuring project data remains versioned and accessible.",inputs:"F3D (modified in memory)",outputs:"F3D in Fusion Team hub",mechanism:"TypeScript — Fusion cloud data access via user credentials (3-legged OAuth); DataFiles; DataFolders",source:"APS beta blog: 'store automation outcomes directly in your Fusion Team hub'"},
+    ]},
+    {name:"CAD design automation", icon:"✏", caps:[
+      {name:"Sketching",weight:"light",desc:"Create and modify 2D sketches — add geometry (lines, arcs, circles, splines), apply constraints (coincident, tangent, parallel, perpendicular), add dimensions.",inputs:"F3D",outputs:"F3D (with sketches)",mechanism:"TypeScript — Sketches.add(); SketchLines; SketchArcs; GeometricConstraints; SketchDimensions",source:"Fusion Developer API docs; APS blog (sketching listed)"},
+      {name:"3D solid / surface modeling",weight:"medium",desc:"Create and modify 3D solid bodies (extrude, revolve, sweep, loft, shell, combine, chamfer, fillet) and surface bodies using the full Fusion B-Rep modeling kernel.",inputs:"F3D",outputs:"F3D",mechanism:"TypeScript — ExtrudeFeatures.add(); RevolveFeatures; SweepFeatures; FilletFeatures; etc.",source:"Fusion Developer API docs (full feature list)"},
+      {name:"Mesh editing",weight:"medium",desc:"Create, import, and modify mesh bodies — for additive manufacturing preparation, scan data processing, or visualization optimization.",inputs:"F3D / STL / OBJ",outputs:"F3D / STL / OBJ",mechanism:"TypeScript — MeshBodies; MeshBody; mesh editing operations",source:"APS beta blog: 'mesh editing' listed in capability summary"},
+      {name:"Assembly design and component management",weight:"medium",desc:"Create and manage multi-component assemblies — add components, set joints (rigid, revolute, slider, cylindrical), define constraints, manage component hierarchy.",inputs:"F3D",outputs:"F3D",mechanism:"TypeScript — Occurrences.addNewComponent(); Joints.add(); JointMotion; RigidGroup",source:"Fusion Developer API docs; APS blog (assemblies listed)"},
+      {name:"Parameter-driven design and product configurator",weight:"light",desc:"Read and modify design parameters to drive geometry changes — enabling automated product configurators, variant generation, and mass customization. The public Fusion Configurator Demo demonstrates this pattern.",inputs:"F3D + parameter values (JSON/input)",outputs:"F3D (parametric variant)",mechanism:"TypeScript — Design.allParameters; UserParameters; param.expression = newValue",source:"Fusion Configurator Demo (APS GitHub — source code public); APS GA blog"},
+    ]},
+    {name:"CAM / manufacturing", icon:"⚙", caps:[
+      {name:"CAM toolpath generation",weight:"heavy",desc:"Automate CAM programming for CNC machining — create setups, select operations (2D contour, adaptive clearing, drilling, 3D surfacing), assign tools, and generate toolpaths headlessly. Toolpath.com is a confirmed production adopter.",inputs:"F3D (with machined geometry)",outputs:"F3D (with CAM data)",mechanism:"TypeScript — CAM object; Setups; Operations; ToolpathGenerations",source:"APS GA blog (CAM use case); Toolpath.com integration"},
+      {name:"Post-processing (NC code generation)",weight:"medium",desc:"Run the CAM post-processor to generate machine-specific NC code from Fusion toolpaths — enabling automated quoting and manufacturing pipeline integration.",inputs:"F3D (with CAM setups)",outputs:"NC code (.nc / .tap / machine-specific)",mechanism:"TypeScript — CAM.postProcess(); PostProcessInput; postConfiguration",source:"APS GA blog; Toolpath.com integration"},
+      {name:"2D flat pattern nesting",weight:"heavy",desc:"Automate 2D nesting of flat patterns (sheet metal, fabric) to minimize material waste using Fusion's built-in nesting algorithms.",inputs:"F3D (with flat pattern bodies)",outputs:"F3D (nested layout) / DXF",mechanism:"TypeScript — Nesting API; 2D nesting configuration",source:"APS beta blog: '2D and 3D nesting' explicitly listed; APS GA blog (TrueShape)"},
+      {name:"3D additive manufacturing packing (TrueShape)",weight:"heavy",desc:"Automate 3D packing of parts for additive builds (SLS, MJF, SLA) using Fusion's industry-leading TrueShape packer — maximize parts per build, minimize support. Authentise (additive MES platform) is a confirmed adopter.",inputs:"F3D (with 3D bodies)",outputs:"F3D (packed build layout) / export formats",mechanism:"TypeScript — 3D Nesting/Packing API; TrueShape packer",source:"APS GA blog: 'TrueShape packer' explicitly mentioned; Authentise integration"},
+      {name:"Integrate with PLM / PDM / MES",weight:"light",desc:"Connect Fusion Automation outputs to enterprise systems (PLM, PDM, MES) via the cloud API architecture and webhook callbacks.",inputs:"F3D + external system data",outputs:"Modified F3D + system payload",mechanism:"TypeScript + webhook callbacks; REST API calls in onComplete",source:"APS GA blog: 'Integrate into PLM, PDM, or MES workflows'"},
+    ]},
+    {name:"Parallel batch processing", icon:"⚡", caps:[
+      {name:"Parallel job execution",weight:"varies",desc:"Submit multiple Fusion Automation WorkItems simultaneously to process designs in parallel — dramatically reducing throughput time for batch operations compared to sequential desktop processing.",inputs:"Multiple F3D files",outputs:"Multiple processed outputs",mechanism:"Multiple WorkItem submissions via REST API; server-side parallelism",source:"APS beta blog: 'run multiple automation jobs simultaneously'"},
+    ]},
+  ]},
+};
+
+const WEIGHT_BADGE = {light:"badge badge-light",medium:"badge badge-medium",heavy:"badge badge-heavy",varies:"badge badge-varies"};
+const WEIGHT_LABEL = {light:"Light",medium:"Medium",heavy:"Heavy",varies:"Varies"};
+
+let currentEngine = "Revit";
+
+function setEngine(eng, el){
+  currentEngine = eng;
+  document.querySelectorAll(".etab").forEach(t=>t.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("detail-slot").innerHTML="";
+  render();
+}
+
+function countCaps(eng){ return DATA[eng].categories.reduce((s,c)=>s+c.caps.length,0); }
+function countByWeight(eng,w){ return DATA[eng].categories.reduce((s,c)=>s+c.caps.filter(cap=>cap.weight===w).length,0); }
+
+function render(){
+  const d = DATA[currentEngine];
+  document.getElementById("stats").innerHTML=`
+    <div class="stat"><div class="stat-n">${countCaps(currentEngine)}</div><div class="stat-l">total capabilities</div></div>
+    <div class="stat"><div class="stat-n" style="color:#3B6D11">${countByWeight(currentEngine,"light")}</div><div class="stat-l">light compute</div></div>
+    <div class="stat"><div class="stat-n" style="color:#854F0B">${countByWeight(currentEngine,"medium")}</div><div class="stat-l">medium compute</div></div>
+    <div class="stat"><div class="stat-n" style="color:#A32D2D">${countByWeight(currentEngine,"heavy")}</div><div class="stat-l">heavy compute</div></div>
+    <div class="stat" style="max-width:320px"><div class="stat-l" style="font-size:11px;text-align:left;line-height:1.5"><strong>Scripting:</strong> ${d.scripting}</div></div>
+  `;
+  document.getElementById("content").innerHTML = d.categories.map((cat,ci)=>`
+    <div class="cat-section">
+      <div class="cat-header" style="background:${d.bg};color:${d.text}">
+        <span style="font-size:14px">${cat.icon}</span>
+        <span>${cat.name}</span>
+        <span style="margin-left:auto;font-size:11px;opacity:.8">${cat.caps.length} capabilities</span>
+      </div>
+      <div class="cap-grid">
+        ${cat.caps.map((cap,ki)=>`
+          <div class="cap-card" onclick="showDetail('${currentEngine}',${ci},${ki})">
+            <div class="cap-name">${cap.name}</div>
+            <div class="cap-badges"><span class="${WEIGHT_BADGE[cap.weight]}">${WEIGHT_LABEL[cap.weight]}</span></div>
+            <div class="cap-desc">${cap.desc.slice(0,90)}${cap.desc.length>90?"…":""}</div>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `).join("");
+}
+
+function showDetail(eng, ci, ki){
+  const d = DATA[eng];
+  const cap = d.categories[ci].caps[ki];
+  const catName = d.categories[ci].name;
+  document.getElementById("detail-slot").innerHTML = `
+    <div class="detail-panel">
+      <div class="dp-header">
+        <div>
+          <span style="font-size:11px;color:${d.color};font-weight:500;display:block;margin-bottom:3px">${catName} · ${eng}</span>
+          ${cap.name}
+        </div>
+        <button class="dp-close" onclick="document.getElementById('detail-slot').innerHTML=''">×</button>
+      </div>
+      <div class="dp-grid">
+        <div class="dp-field dp-full"><label>Description</label><p>${cap.desc}</p></div>
+        <div class="dp-field"><label>Input format(s)</label><p>${cap.inputs}</p></div>
+        <div class="dp-field"><label>Output format(s)</label><p>${cap.outputs}</p></div>
+        <div class="dp-field dp-full"><label>Code mechanism</label><p class="mono-box">${cap.mechanism}</p></div>
+        <div class="dp-field"><label>Compute weight</label><span class="${WEIGHT_BADGE[cap.weight]}">${WEIGHT_LABEL[cap.weight]}</span></div>
+        <div class="dp-field"><label>Primary source</label><span class="source-tag">${cap.source}</span></div>
+      </div>
+    </div>
+  `;
+  document.getElementById("detail-slot").scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+render();
+</script>
+</body>
+</html>
