@@ -5,792 +5,1225 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>APS Automation API · Capability Explorer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-/* ── Reset & tokens ──────────────────────────────────────────────── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:       #0D0F14;
-  --bg1:      #13161D;
-  --bg2:      #1A1E28;
-  --bg3:      #222738;
-  --border:   rgba(255,255,255,0.07);
-  --border2:  rgba(255,255,255,0.13);
-  --text:     #E8EAF0;
-  --text2:    #9499A8;
-  --text3:    #5C6070;
-  --accent:   #4F8EF7;
-  --accent2:  #6AABFF;
-  --mono:     'IBM Plex Mono', monospace;
-  --sans:     'DM Sans', sans-serif;
-  --display:  'Syne', sans-serif;
+/* ── Reset ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Engine accent colours */
-  --revit:    #34C78A;
-  --autocad:  #4F8EF7;
-  --inventor: #F5A623;
-  --dsmax:    #E05B5B;
-  --fusion:   #A78BFA;
+/* ── Autodesk Brand Tokens ─────────────────────────────────────────── */
+:root {
+  /* Core brand */
+  --adsk-black:    #1A1A1A;
+  --adsk-white:    #FFFFFF;
+  --adsk-yellow:   #FFC72C;
+  --adsk-blue:     #0696D7;
+  --adsk-blue-dk:  #0573A8;
+  --adsk-blue-lt:  #E8F4FB;
 
-  /* Weight colours */
-  --light-bg:  rgba(52,199,138,0.12);
-  --light-fg:  #34C78A;
-  --medium-bg: rgba(245,166,35,0.12);
-  --medium-fg: #F5A623;
-  --heavy-bg:  rgba(224,91,91,0.12);
-  --heavy-fg:  #E05B5B;
-  --varies-bg: rgba(167,139,250,0.12);
-  --varies-fg: #A78BFA;
+  /* Neutral scale */
+  --gray-50:   #F8F9FA;
+  --gray-100:  #F1F3F5;
+  --gray-200:  #E9ECEF;
+  --gray-300:  #DEE2E6;
+  --gray-400:  #CED4DA;
+  --gray-500:  #ADB5BD;
+  --gray-600:  #6C757D;
+  --gray-700:  #495057;
+  --gray-800:  #343A40;
+  --gray-900:  #212529;
+
+  /* Semantic */
+  --bg:        var(--adsk-white);
+  --bg-subtle: var(--gray-50);
+  --bg-muted:  var(--gray-100);
+  --border:    var(--gray-200);
+  --border-md: var(--gray-300);
+  --text:      var(--adsk-black);
+  --text-2:    var(--gray-700);
+  --text-3:    var(--gray-500);
+
+  /* Engine palette — APS product colours */
+  --revit:     #005B96;
+  --autocad:   #E34A26;
+  --inventor:  #EA780E;
+  --dsmax:     #8F4098;
+  --fusion:    #0696D7;
+
+  /* Compute weight */
+  --light-bg:  #EBF7EE; --light-fg:  #237A3B;
+  --medium-bg: #FEF3E2; --medium-fg: #985C00;
+  --heavy-bg:  #FDECEA; --heavy-fg:  #B71C1C;
+  --varies-bg: #EDE7F6; --varies-fg: #5E35B1;
+
+  --font: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+
+  --radius-sm: 4px;
+  --radius:    8px;
+  --radius-lg: 12px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow:    0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.05);
 }
 
-html{scroll-behavior:smooth}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:var(--sans);
-  font-size:14px;
-  line-height:1.6;
-  min-height:100vh;
-  overflow-x:hidden;
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  overflow-x: hidden;
 }
 
-/* ── Layout ──────────────────────────────────────────────────────── */
-.shell{display:flex;flex-direction:column;min-height:100vh}
+/* ── Global nav bar ────────────────────────────────────────────────── */
+.global-nav {
+  height: 48px;
+  background: var(--adsk-black);
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 0;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
 
-/* ── Header ──────────────────────────────────────────────────────── */
-.header{
-  padding:20px 28px 0;
-  border-bottom:1px solid var(--border);
+/* Autodesk wordmark as inline SVG text */
+.adsk-logo {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  text-decoration: none;
+  flex-shrink: 0;
 }
-.header-top{
-  display:flex;align-items:flex-start;
-  justify-content:space-between;gap:16px;
-  padding-bottom:18px;
+.adsk-logo svg { display: block; }
+
+.nav-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255,255,255,0.2);
+  margin: 0 16px;
+  flex-shrink: 0;
 }
-.brand{display:flex;flex-direction:column;gap:4px}
-.brand-eyebrow{
-  font-family:var(--mono);font-size:10px;letter-spacing:0.12em;
-  color:var(--accent);text-transform:uppercase;
+.nav-product {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  white-space: nowrap;
 }
-.brand-title{
-  font-family:var(--display);font-size:22px;font-weight:700;
-  color:#fff;letter-spacing:-0.02em;line-height:1.2;
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
 }
-.brand-sub{
-  font-size:12px;color:var(--text3);margin-top:2px;
+.nav-link {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  transition: color .15s, background .15s;
 }
-.stats-row{
-  display:flex;gap:20px;align-items:center;flex-shrink:0;
+.nav-link:hover { color: #fff; background: rgba(255,255,255,0.08); }
+.nav-badge {
+  background: var(--adsk-yellow);
+  color: var(--adsk-black);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  margin-left: 4px;
+  letter-spacing: 0.03em;
 }
-.stat{text-align:right}
-.stat-n{
-  font-family:var(--display);font-size:20px;font-weight:700;color:#fff;
-  line-height:1;
+
+/* ── Sub header ────────────────────────────────────────────────────── */
+.sub-header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px 0;
 }
-.stat-l{font-size:10px;color:var(--text3);margin-top:2px;letter-spacing:0.06em;text-transform:uppercase}
-.stat-div{width:1px;height:32px;background:var(--border2)}
+.sub-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding-bottom: 20px;
+}
+.sub-header-left { flex: 1; }
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+  margin-bottom: 8px;
+}
+.breadcrumb a { color: var(--adsk-blue); text-decoration: none; }
+.breadcrumb a:hover { text-decoration: underline; }
+.breadcrumb-sep { color: var(--gray-400); }
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--adsk-black);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.page-subtitle strong { color: var(--adsk-black); font-weight: 600; }
+
+/* Stats pills */
+.stats-row {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  align-items: flex-start;
+  padding-top: 4px;
+}
+.stat-pill {
+  text-align: center;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  min-width: 80px;
+}
+.stat-pill-n {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--adsk-black);
+  line-height: 1;
+  display: block;
+}
+.stat-pill-l {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 3px;
+  display: block;
+}
+.stat-pill.accent { background: var(--adsk-blue-lt); border-color: #C8E7F7; }
+.stat-pill.accent .stat-pill-n { color: var(--adsk-blue); }
 
 /* Engine tabs */
-.engine-tabs{
-  display:flex;gap:2px;padding-bottom:0;
-  overflow-x:auto;scrollbar-width:none;
+.engine-tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
 }
-.engine-tabs::-webkit-scrollbar{display:none}
-.etab{
-  display:flex;align-items:center;gap:7px;
-  padding:10px 16px 11px;
-  border:none;background:none;cursor:pointer;
-  font-family:var(--sans);font-size:13px;font-weight:500;
-  color:var(--text3);white-space:nowrap;
-  border-bottom:2px solid transparent;
-  transition:color .15s,border-color .15s;
-  position:relative;top:1px;
-}
-.etab:hover{color:var(--text)}
-.etab .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;opacity:.5;transition:opacity .15s}
-.etab.active{color:#fff}
-.etab.active .dot{opacity:1}
-.etab[data-e="Revit"].active{border-color:var(--revit);color:var(--revit)}
-.etab[data-e="Revit"] .dot{background:var(--revit)}
-.etab[data-e="AutoCAD"].active{border-color:var(--autocad);color:var(--autocad)}
-.etab[data-e="AutoCAD"] .dot{background:var(--autocad)}
-.etab[data-e="Inventor"].active{border-color:var(--inventor);color:var(--inventor)}
-.etab[data-e="Inventor"] .dot{background:var(--inventor)}
-.etab[data-e="3ds Max"].active{border-color:var(--dsmax);color:var(--dsmax)}
-.etab[data-e="3ds Max"] .dot{background:var(--dsmax)}
-.etab[data-e="Fusion"].active{border-color:var(--fusion);color:var(--fusion)}
-.etab[data-e="Fusion"] .dot{background:var(--fusion)}
+.engine-tabs::-webkit-scrollbar { display: none; }
 
-/* ── Toolbar ─────────────────────────────────────────────────────── */
-.toolbar{
-  display:flex;align-items:center;gap:10px;
-  padding:14px 28px;border-bottom:1px solid var(--border);
-  background:var(--bg1);flex-wrap:wrap;
+.etab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px 12px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+  transition: color .15s, border-color .15s, background .15s;
+  position: relative;
+  top: 1px;
 }
-.search-wrap{
-  position:relative;flex:1;min-width:200px;max-width:360px;
-}
-.search-icon{
-  position:absolute;left:11px;top:50%;transform:translateY(-50%);
-  color:var(--text3);pointer-events:none;
-  display:flex;align-items:center;
-}
-.search-input{
-  width:100%;padding:8px 12px 8px 34px;
-  background:var(--bg2);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-family:var(--sans);font-size:13px;
-  outline:none;transition:border-color .15s;
-}
-.search-input::placeholder{color:var(--text3)}
-.search-input:focus{border-color:var(--accent)}
+.etab:hover { color: var(--adsk-black); background: var(--bg-subtle); }
+.etab.active { color: var(--adsk-black); font-weight: 600; }
 
-.filter-group{display:flex;gap:6px;flex-wrap:wrap}
-.filter-btn{
-  padding:6px 12px;border-radius:6px;
-  border:1px solid var(--border);background:var(--bg2);
-  color:var(--text2);font-family:var(--sans);font-size:12px;font-weight:500;
-  cursor:pointer;transition:all .15s;white-space:nowrap;
+.etab-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
 }
-.filter-btn:hover{border-color:var(--border2);color:var(--text)}
-.filter-btn.active-light{background:var(--light-bg);border-color:var(--light-fg);color:var(--light-fg)}
-.filter-btn.active-medium{background:var(--medium-bg);border-color:var(--medium-fg);color:var(--medium-fg)}
-.filter-btn.active-heavy{background:var(--heavy-bg);border-color:var(--heavy-fg);color:var(--heavy-fg)}
-.filter-btn.active-varies{background:var(--varies-bg);border-color:var(--varies-fg);color:var(--varies-fg)}
-
-.view-toggle{display:flex;gap:2px;margin-left:auto}
-.vtbtn{
-  padding:6px 10px;border:1px solid var(--border);background:var(--bg2);
-  color:var(--text3);cursor:pointer;font-size:14px;transition:all .15s;
+.etab-count {
+  font-size: 11px;
+  background: var(--border);
+  color: var(--text-2);
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
 }
-.vtbtn:first-child{border-radius:6px 0 0 6px}
-.vtbtn:last-child{border-radius:0 6px 6px 0}
-.vtbtn.active{background:var(--bg3);color:var(--text);border-color:var(--border2)}
 
-.result-count{font-size:12px;color:var(--text3);margin-left:auto;white-space:nowrap}
+.etab[data-e="Revit"].active    { border-color: var(--revit);    color: var(--revit); }
+.etab[data-e="AutoCAD"].active  { border-color: var(--autocad);  color: var(--autocad); }
+.etab[data-e="Inventor"].active { border-color: var(--inventor); color: var(--inventor); }
+.etab[data-e="3ds Max"].active  { border-color: var(--dsmax);    color: var(--dsmax); }
+.etab[data-e="Fusion"].active   { border-color: var(--fusion);   color: var(--fusion); }
 
-/* ── Main content ────────────────────────────────────────────────── */
-.main{display:flex;flex:1;overflow:hidden;height:calc(100vh - 140px)}
+.etab[data-e="Revit"] .etab-dot    { background: var(--revit); }
+.etab[data-e="AutoCAD"] .etab-dot  { background: var(--autocad); }
+.etab[data-e="Inventor"] .etab-dot { background: var(--inventor); }
+.etab[data-e="3ds Max"] .etab-dot  { background: var(--dsmax); }
+.etab[data-e="Fusion"] .etab-dot   { background: var(--fusion); }
+
+/* ── Toolbar ────────────────────────────────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+  max-width: 340px;
+}
+.search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  pointer-events: none;
+  display: flex;
+}
+.search-input {
+  width: 100%;
+  padding: 8px 12px 8px 33px;
+  background: var(--bg);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.search-input::placeholder { color: var(--text-3); }
+.search-input:focus {
+  border-color: var(--adsk-blue);
+  box-shadow: 0 0 0 3px rgba(6,150,215,0.12);
+}
+
+.filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  background: var(--bg);
+  border: 1px solid var(--border-md);
+  border-radius: 20px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.filter-chip:hover { border-color: var(--gray-400); color: var(--text); }
+.filter-chip .chip-dot { width: 7px; height: 7px; border-radius: 50%; }
+.fc-light .chip-dot  { background: var(--light-fg); }
+.fc-medium .chip-dot { background: var(--medium-fg); }
+.fc-heavy .chip-dot  { background: var(--heavy-fg); }
+.fc-varies .chip-dot { background: var(--varies-fg); }
+.fc-light.on  { background: var(--light-bg);  border-color: var(--light-fg);  color: var(--light-fg); }
+.fc-medium.on { background: var(--medium-bg); border-color: var(--medium-fg); color: var(--medium-fg); }
+.fc-heavy.on  { background: var(--heavy-bg);  border-color: var(--heavy-fg);  color: var(--heavy-fg); }
+.fc-varies.on { background: var(--varies-bg); border-color: var(--varies-fg); color: var(--varies-fg); }
+
+.toolbar-right { display: flex; gap: 6px; align-items: center; margin-left: auto; }
+
+.view-toggle { display: flex; border: 1px solid var(--border-md); border-radius: var(--radius); overflow: hidden; }
+.vtbtn {
+  padding: 6px 10px;
+  background: var(--bg);
+  border: none;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 13px;
+  transition: background .12s, color .12s;
+  display: flex;
+  align-items: center;
+}
+.vtbtn:hover { background: var(--bg-muted); color: var(--text); }
+.vtbtn.active { background: var(--adsk-black); color: #fff; }
+
+.result-count {
+  font-size: 12px;
+  color: var(--text-3);
+  white-space: nowrap;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  border-radius: var(--radius);
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────── */
+.app-body {
+  display: flex;
+  height: calc(100vh - 160px);
+  overflow: hidden;
+}
 
 /* Sidebar */
-.sidebar{
-  width:200px;flex-shrink:0;
-  border-right:1px solid var(--border);
-  overflow-y:auto;scrollbar-width:thin;
-  scrollbar-color:var(--bg3) transparent;
-  padding:12px 0;
+.sidebar {
+  width: 216px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  background: var(--bg);
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-200) transparent;
 }
-.sidebar-label{
-  padding:6px 16px;font-size:10px;letter-spacing:0.1em;
-  text-transform:uppercase;color:var(--text3);font-family:var(--mono);
+.sidebar-section { padding: 16px 0 8px; }
+.sidebar-label {
+  padding: 0 16px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
 }
-.cat-btn{
-  display:flex;align-items:center;justify-content:space-between;
-  width:100%;padding:7px 16px;border:none;background:none;
-  cursor:pointer;font-family:var(--sans);font-size:12px;color:var(--text2);
-  text-align:left;transition:all .12s;gap:8px;
+.cat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 7px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-align: left;
+  transition: background .1s, color .1s;
+  gap: 6px;
 }
-.cat-btn:hover{background:var(--bg2);color:var(--text)}
-.cat-btn.active{background:var(--bg2);color:#fff;font-weight:600}
-.cat-btn.active .cat-dot{opacity:1}
-.cat-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;opacity:0;transition:opacity .12s}
-.cat-count{
-  font-size:10px;color:var(--text3);background:var(--bg3);
-  padding:1px 6px;border-radius:10px;flex-shrink:0;
-  font-family:var(--mono);
+.cat-btn:hover { background: var(--bg-subtle); color: var(--adsk-black); }
+.cat-btn.active {
+  background: var(--adsk-blue-lt);
+  color: var(--adsk-blue-dk);
+  font-weight: 600;
 }
-.cat-btn.active .cat-count{background:rgba(79,142,247,0.15);color:var(--accent)}
-
-/* Content area */
-.content{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent;padding:20px 24px}
-
-/* ── Grid view ───────────────────────────────────────────────────── */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-
-.cap-card{
-  background:var(--bg1);border:1px solid var(--border);
-  border-radius:10px;padding:16px;cursor:pointer;
-  transition:border-color .15s,transform .15s,background .15s;
-  display:flex;flex-direction:column;gap:8px;
+.cat-btn-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: var(--bg-muted);
+  padding: 1px 6px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  min-width: 22px;
+  text-align: center;
 }
-.cap-card:hover{
-  border-color:var(--border2);background:var(--bg2);
-  transform:translateY(-1px);
-}
-.cap-card.selected{border-color:var(--accent);background:var(--bg2)}
-
-.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.card-name{font-size:13px;font-weight:600;color:#fff;line-height:1.3;flex:1}
-.weight-pill{
-  flex-shrink:0;font-size:10px;font-weight:600;padding:2px 8px;
-  border-radius:20px;letter-spacing:0.04em;font-family:var(--mono);
-}
-.w-light{background:var(--light-bg);color:var(--light-fg)}
-.w-medium{background:var(--medium-bg);color:var(--medium-fg)}
-.w-heavy{background:var(--heavy-bg);color:var(--heavy-fg)}
-.w-varies{background:var(--varies-bg);color:var(--varies-fg)}
-
-.card-cat{font-size:11px;color:var(--text3)}
-.card-desc{font-size:12px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.card-footer{display:flex;align-items:center;gap:6px;margin-top:2px}
-.io-tag{font-size:10px;font-family:var(--mono);color:var(--text3);
-  background:var(--bg3);padding:2px 7px;border-radius:4px}
-
-/* ── List view ───────────────────────────────────────────────────── */
-.list-view{display:flex;flex-direction:column;gap:2px}
-.list-item{
-  display:grid;grid-template-columns:1fr 140px 80px 90px;
-  align-items:center;gap:12px;
-  padding:10px 14px;border-radius:8px;
-  border:1px solid transparent;cursor:pointer;
-  transition:background .12s,border-color .12s;
-}
-.list-item:hover{background:var(--bg2);border-color:var(--border)}
-.list-item.selected{background:var(--bg2);border-color:var(--accent)}
-.li-name{font-size:13px;font-weight:500;color:#fff}
-.li-cat{font-size:11px;color:var(--text3);margin-top:2px}
-.li-source{font-size:11px;color:var(--text3);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.li-weight{text-align:center}
-.li-io{font-size:10px;color:var(--text3);font-family:var(--mono)}
-
-/* ── Detail Panel ────────────────────────────────────────────────── */
-.detail-panel{
-  width:380px;flex-shrink:0;
-  border-left:1px solid var(--border);
-  background:var(--bg1);
-  overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bg3) transparent;
-  transition:width .2s;
-}
-.detail-panel.hidden{width:0;overflow:hidden;border:none}
-
-.dp-inner{padding:24px;display:flex;flex-direction:column;gap:0;min-width:320px}
-.dp-close{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:20px;
-}
-.dp-close-btn{
-  background:var(--bg2);border:1px solid var(--border);
-  color:var(--text2);cursor:pointer;border-radius:6px;
-  padding:5px 10px;font-size:12px;transition:all .12s;
-}
-.dp-close-btn:hover{background:var(--bg3);color:#fff}
-
-.dp-engine-tag{
-  font-size:10px;font-family:var(--mono);letter-spacing:0.1em;
-  text-transform:uppercase;margin-bottom:6px;
-}
-.dp-title{
-  font-family:var(--display);font-size:17px;font-weight:700;
-  color:#fff;line-height:1.3;margin-bottom:6px;
-}
-.dp-cat{font-size:12px;color:var(--text3);margin-bottom:16px}
-.dp-divider{height:1px;background:var(--border);margin:16px 0}
-
-.dp-field{margin-bottom:14px}
-.dp-field-label{
-  font-size:10px;text-transform:uppercase;letter-spacing:0.1em;
-  color:var(--text3);font-family:var(--mono);margin-bottom:5px;
-}
-.dp-field-val{font-size:13px;color:var(--text);line-height:1.5}
-.dp-field-mono{
-  font-size:11px;font-family:var(--mono);color:#98C4FF;
-  background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.15);
-  padding:10px 12px;border-radius:6px;line-height:1.6;
-  white-space:pre-wrap;word-break:break-all;
-}
-.dp-source{
-  font-size:11px;font-family:var(--mono);color:var(--text2);
-  background:var(--bg2);border:1px solid var(--border);
-  padding:7px 10px;border-radius:6px;
-}
-.dp-io-row{display:flex;gap:8px}
-.dp-io-box{flex:1;background:var(--bg2);border:1px solid var(--border);padding:8px 10px;border-radius:6px}
-.dp-io-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-family:var(--mono);margin-bottom:4px}
-.dp-io-val{font-size:12px;color:var(--text);font-family:var(--mono)}
-
-.weight-badge-lg{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:12px;font-weight:600;padding:5px 12px;
-  border-radius:6px;font-family:var(--mono);margin-bottom:6px;
+.cat-btn.active .cat-count {
+  background: rgba(6,150,215,0.15);
+  color: var(--adsk-blue-dk);
 }
 
-/* ── Section headers in content ──────────────────────────────────── */
-.section-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 0 10px;
-  border-bottom:1px solid var(--border);margin-bottom:12px;
+/* Content */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-subtle);
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-200) transparent;
 }
-.section-title{
-  font-family:var(--display);font-size:13px;font-weight:700;
-  color:#fff;display:flex;align-items:center;gap:8px;
+.content-inner { padding: 24px; }
+
+/* Engine meta bar */
+.engine-meta {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
 }
-.section-count{
-  font-size:11px;color:var(--text3);font-family:var(--mono);
-  background:var(--bg3);padding:2px 8px;border-radius:10px;
+.em-item { padding: 0 20px; }
+.em-item:first-child { padding-left: 0; }
+.em-item:not(:last-child) { border-right: 1px solid var(--border); margin-right: 0; }
+.em-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); margin-bottom: 3px; }
+.em-val { font-size: 13px; font-weight: 500; color: var(--text); }
+.em-val.mono { font-family: var(--mono); font-size: 11px; color: var(--text-2); }
+
+/* Section header */
+.section-hdr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  margin-top: 4px;
+}
+.section-hdr + .section-hdr,
+.grid + .section-hdr,
+.cap-list + .section-hdr { margin-top: 28px; }
+.section-hdr-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--adsk-black);
+}
+.section-hdr-line { flex: 1; height: 1px; background: var(--border); }
+.section-hdr-count {
+  font-size: 11px;
+  color: var(--text-3);
+  background: var(--border);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-weight: 600;
 }
 
-/* ── Empty state ─────────────────────────────────────────────────── */
-.empty{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:60px 20px;gap:12px;color:var(--text3);text-align:center;
+/* ── Grid view ──────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(288px, 1fr));
+  gap: 10px;
+  margin-bottom: 8px;
 }
-.empty-icon{font-size:32px;opacity:.4}
-.empty-title{font-size:14px;font-weight:600;color:var(--text2)}
-.empty-sub{font-size:12px}
 
-/* ── Engine info bar ─────────────────────────────────────────────── */
-.engine-info{
-  background:var(--bg1);border:1px solid var(--border);
-  border-radius:10px;padding:14px 18px;margin-bottom:18px;
-  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+.cap-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: slideUp .2s ease both;
 }
-.ei-item{display:flex;flex-direction:column;gap:2px}
-.ei-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);font-family:var(--mono)}
-.ei-val{font-size:12px;color:var(--text);font-family:var(--mono)}
-.ei-divider{width:1px;height:28px;background:var(--border);flex-shrink:0}
-
-/* ── Animations ──────────────────────────────────────────────────── */
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.cap-card,.list-item{animation:fadeIn .18s ease both}
-
-/* ── Scrollbar styling ───────────────────────────────────────────── */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:3px}
-
-/* ── Responsive tweaks ───────────────────────────────────────────── */
-@media(max-width:900px){
-  .sidebar{display:none}
-  .detail-panel{position:fixed;right:0;top:0;height:100vh;z-index:100;
-    box-shadow:-20px 0 60px rgba(0,0,0,0.5)}
-  .grid{grid-template-columns:1fr 1fr}
+.cap-card:hover {
+  border-color: var(--adsk-blue);
+  box-shadow: var(--shadow);
+  transform: translateY(-1px);
 }
-@media(max-width:600px){
-  .grid{grid-template-columns:1fr}
-  .header-top{flex-direction:column;gap:12px}
-  .stats-row{justify-content:flex-start}
-  .list-item{grid-template-columns:1fr 80px}
+.cap-card.selected {
+  border-color: var(--adsk-blue);
+  box-shadow: 0 0 0 2px rgba(6,150,215,0.15);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.card-name { font-size: 13px; font-weight: 600; color: var(--adsk-black); line-height: 1.35; flex: 1; }
+.card-desc {
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-footer { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.io-chip {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--text-3);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+}
+
+/* Weight badge */
+.wbadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+.wb-light  { background: var(--light-bg);  color: var(--light-fg); }
+.wb-medium { background: var(--medium-bg); color: var(--medium-fg); }
+.wb-heavy  { background: var(--heavy-bg);  color: var(--heavy-fg); }
+.wb-varies { background: var(--varies-bg); color: var(--varies-fg); }
+
+/* ── List view ──────────────────────────────────────────────────────── */
+.cap-list { display: flex; flex-direction: column; gap: 1px; }
+
+.list-hdr {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 90px;
+  gap: 12px;
+  padding: 6px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+.list-row {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 90px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+  animation: slideUp .15s ease both;
+}
+.list-row:hover { border-color: var(--adsk-blue); background: var(--adsk-blue-lt); }
+.list-row.selected { border-color: var(--adsk-blue); background: var(--adsk-blue-lt); }
+.lr-name { font-size: 13px; font-weight: 600; color: var(--adsk-black); }
+.lr-cat { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+.lr-input { font-size: 11px; font-family: var(--mono); color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lr-output { font-size: 11px; font-family: var(--mono); color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── Detail panel ────────────────────────────────────────────────────── */
+.detail-panel {
+  width: 380px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  background: var(--bg);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-200) transparent;
+  transition: width .2s;
+}
+.detail-panel.hidden { width: 0; overflow: hidden; border: none; }
+
+.dp-body { padding: 24px; min-width: 340px; }
+
+.dp-close-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.dp-close-btn {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-md);
+  border-radius: var(--radius);
+  padding: 5px 12px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all .12s;
+}
+.dp-close-btn:hover { background: var(--bg-muted); color: var(--adsk-black); border-color: var(--gray-400); }
+
+.dp-engine-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.dp-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--adsk-black);
+  line-height: 1.3;
+  margin-bottom: 12px;
+}
+.dp-cat-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--bg-muted);
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+}
+
+.dp-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+.dp-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.dp-text { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 12px; }
+
+.dp-io-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.dp-io-box {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.dp-io-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 4px; }
+.dp-io-val { font-size: 11px; font-family: var(--mono); color: var(--text-2); line-height: 1.4; }
+
+.dp-code {
+  font-size: 11px;
+  font-family: var(--mono);
+  color: #0A3F6B;
+  background: var(--adsk-blue-lt);
+  border: 1px solid #C8E7F7;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin-bottom: 14px;
+}
+
+.dp-source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+.dp-source-icon { color: var(--text-3); flex-shrink: 0; }
+.dp-source-text { font-size: 11px; font-family: var(--mono); color: var(--text-2); line-height: 1.4; }
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  gap: 12px;
+  text-align: center;
+}
+.empty-icon { font-size: 36px; line-height: 1; }
+.empty-title { font-size: 16px; font-weight: 600; color: var(--adsk-black); }
+.empty-sub { font-size: 13px; color: var(--text-2); }
+.empty-btn {
+  margin-top: 8px;
+  padding: 8px 18px;
+  background: var(--adsk-blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.empty-btn:hover { background: var(--adsk-blue-dk); }
+
+/* ── Footer ──────────────────────────────────────────────────────────── */
+.footer {
+  background: var(--adsk-black);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-left { display: flex; align-items: center; gap: 16px; }
+.footer-text { font-size: 11px; color: rgba(255,255,255,0.4); }
+.footer-link { font-size: 11px; color: rgba(255,255,255,0.4); text-decoration: none; }
+.footer-link:hover { color: rgba(255,255,255,0.7); }
+.footer-right { font-size: 11px; color: rgba(255,255,255,0.3); }
+
+/* ── Scrollbars ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-300); }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .sidebar { display: none; }
+  .detail-panel { position: fixed; right: 0; top: 0; height: 100vh; z-index: 300; box-shadow: var(--shadow-lg); }
+}
+@media (max-width: 640px) {
+  .sub-header-top { flex-direction: column; }
+  .stats-row { justify-content: flex-start; }
+  .grid { grid-template-columns: 1fr; }
+  .list-hdr, .list-row { grid-template-columns: 1fr 90px; }
+  .lr-input, .lr-output { display: none; }
 }
 </style>
 </head>
 <body>
-<div class="shell">
 
-<!-- HEADER -->
-<header class="header">
-  <div class="header-top">
-    <div class="brand">
-      <div class="brand-eyebrow">Autodesk Platform Services</div>
-      <div class="brand-title">Automation API · Capability Explorer</div>
-      <div class="brand-sub">Phase 1 Research — April 2026 · Neeraj Yedekar, Senior PM Developer Enablement</div>
+<!-- GLOBAL NAV -->
+<nav class="global-nav">
+  <a href="#" class="adsk-logo" aria-label="Autodesk">
+    <svg width="106" height="16" viewBox="0 0 106 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9.02 0H6.98L0 16h2.56l1.72-4.08h7.44L13.44 16H16L9.02 0ZM5.2 9.68l2.8-6.64 2.8 6.64H5.2Z" fill="white"/>
+      <path d="M25.36 8.6c-1.56-.44-2.64-.84-2.64-1.88 0-.92.8-1.52 1.96-1.52 1.08 0 2.08.44 2.96 1.24l1.52-1.76C27.8 3.48 26.4 2.88 24.68 2.88c-2.56 0-4.28 1.52-4.28 3.96 0 2.44 1.84 3.2 3.88 3.76 1.64.44 2.64.88 2.64 1.96 0 1-.76 1.6-2.12 1.6-1.28 0-2.44-.52-3.44-1.52L19.8 14.2c1.24 1.24 2.84 1.92 4.88 1.92 2.72 0 4.44-1.52 4.44-4C29.12 9.88 27.28 9.12 25.36 8.6Z" fill="white"/>
+      <path d="M37.64 13.56V5.04H41.6V2.88H31.4v2.16h3.96v8.52H37.64Z" fill="white"/>
+      <path d="M52.56 13.08C51.6 13.6 50.4 13.88 49.2 13.88c-2.88 0-4.88-2-4.88-4.88S46.32 4.12 49.2 4.12c1.2 0 2.36.28 3.32.8l1-2c-1.2-.68-2.72-1.04-4.36-1.04-4.16 0-7.24 2.96-7.24 7.12s3.08 7.12 7.24 7.12c1.64 0 3.12-.36 4.36-1.04l-1-2Z" fill="white"/>
+      <path d="M63.6 2.88H61.32L57.08 8.4V2.88H54.8V16h2.28V9.28l4.52 6.72H64L59.12 9l4.48-6.12Z" fill="white"/>
+      <path d="M74.56 2.88H68.8V16h5.76c4.2 0 7.04-2.8 7.04-6.56 0-3.76-2.84-6.56-7.04-6.56ZM74.52 13.8h-3.44V5.08h3.44c2.72 0 4.72 1.84 4.72 4.36 0 2.52-2 4.36-4.72 4.36Z" fill="white"/>
+      <path d="M90.64 2.88h-2.32l-6.04 13.12h2.56l1.28-2.92h6.68L94.08 16h2.6L90.64 2.88ZM87.08 10.88l2.4-5.52 2.4 5.52H87.08Z" fill="white"/>
+      <path d="M105.2 2.88h-2.56l-3.6 5.04-3.6-5.04H92.8l5 6.96V16h2.28V9.88l5.12-7Z" fill="white"/>
+    </svg>
+  </a>
+  <div class="nav-divider"></div>
+  <span class="nav-product">Platform Services</span>
+  <div class="nav-links">
+    <a href="https://aps.autodesk.com" class="nav-link" target="_blank">Developer Portal</a>
+    <a href="https://github.com/autodesk-platform-services" class="nav-link" target="_blank">GitHub</a>
+    <a href="#" class="nav-link">Phase 3 Taxonomy</a>
+    <span style="background:var(--adsk-yellow);color:var(--adsk-black);font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;margin-left:4px">Phase 1 Research</span>
+  </div>
+</nav>
+
+<!-- SUB HEADER -->
+<div class="sub-header">
+  <div class="sub-header-top">
+    <div class="sub-header-left">
+      <div class="breadcrumb">
+        <a href="#">APS</a>
+        <span class="breadcrumb-sep">›</span>
+        <a href="#">Automation API</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>Capability Explorer</span>
+      </div>
+      <h1 class="page-title">Automation API · Capability Explorer</h1>
+      <p class="page-subtitle">
+        A complete inventory of <strong>95 verified capabilities</strong> across 5 engines and 12 categories — sourced exclusively from official APS documentation, the APS GitHub organisation, and Autodesk developer blogs. Prepared by the Developer Enablement team, April 2026.
+      </p>
     </div>
     <div class="stats-row">
-      <div class="stat"><div class="stat-n" id="stat-total">95</div><div class="stat-l">Capabilities</div></div>
-      <div class="stat-div"></div>
-      <div class="stat"><div class="stat-n">12</div><div class="stat-l">Categories</div></div>
-      <div class="stat-div"></div>
-      <div class="stat"><div class="stat-n">5</div><div class="stat-l">Engines</div></div>
-      <div class="stat-div"></div>
-      <div class="stat"><div class="stat-n" style="color:var(--light-fg)">100%</div><div class="stat-l">Verified</div></div>
+      <div class="stat-pill accent">
+        <span class="stat-pill-n">95</span>
+        <span class="stat-pill-l">Capabilities</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-n">5</span>
+        <span class="stat-pill-l">Engines</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-n">12</span>
+        <span class="stat-pill-l">Categories</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-pill-n" style="color:var(--light-fg)">100%</span>
+        <span class="stat-pill-l">Verified</span>
+      </div>
     </div>
   </div>
   <div class="engine-tabs" id="engine-tabs">
-    <button class="etab active" data-e="Revit" onclick="setEngine('Revit',this)"><span class="dot"></span>Revit</button>
-    <button class="etab" data-e="AutoCAD" onclick="setEngine('AutoCAD',this)"><span class="dot"></span>AutoCAD</button>
-    <button class="etab" data-e="Inventor" onclick="setEngine('Inventor',this)"><span class="dot"></span>Inventor</button>
-    <button class="etab" data-e="3ds Max" onclick="setEngine('3ds Max',this)"><span class="dot"></span>3ds Max</button>
-    <button class="etab" data-e="Fusion" onclick="setEngine('Fusion',this)"><span class="dot"></span>Fusion</button>
+    <button class="etab active" data-e="Revit"   onclick="setEngine('Revit',this)">  <span class="etab-dot"></span>Revit   <span class="etab-count">26</span></button>
+    <button class="etab"        data-e="AutoCAD"  onclick="setEngine('AutoCAD',this)"><span class="etab-dot"></span>AutoCAD <span class="etab-count">19</span></button>
+    <button class="etab"        data-e="Inventor" onclick="setEngine('Inventor',this)"><span class="etab-dot"></span>Inventor<span class="etab-count">20</span></button>
+    <button class="etab"        data-e="3ds Max"  onclick="setEngine('3ds Max',this)"><span class="etab-dot"></span>3ds Max <span class="etab-count">19</span></button>
+    <button class="etab"        data-e="Fusion"   onclick="setEngine('Fusion',this)"> <span class="etab-dot"></span>Fusion  <span class="etab-count">14</span></button>
   </div>
-</header>
+</div>
 
 <!-- TOOLBAR -->
 <div class="toolbar">
   <div class="search-wrap">
     <span class="search-icon">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </span>
-    <input class="search-input" id="search" placeholder="Search capabilities…" oninput="renderContent()">
+    <input class="search-input" id="search" placeholder="Search capabilities, categories, or keywords…" oninput="renderContent()">
   </div>
   <div class="filter-group">
-    <button class="filter-btn" id="f-light"  onclick="toggleFilter('light')" >● Light</button>
-    <button class="filter-btn" id="f-medium" onclick="toggleFilter('medium')">● Medium</button>
-    <button class="filter-btn" id="f-heavy"  onclick="toggleFilter('heavy')" >● Heavy</button>
-    <button class="filter-btn" id="f-varies" onclick="toggleFilter('varies')">● Varies</button>
+    <button class="filter-chip fc-light"  id="fc-light"  onclick="toggleFilter('light')"> <span class="chip-dot"></span>Light</button>
+    <button class="filter-chip fc-medium" id="fc-medium" onclick="toggleFilter('medium')"><span class="chip-dot"></span>Medium</button>
+    <button class="filter-chip fc-heavy"  id="fc-heavy"  onclick="toggleFilter('heavy')"> <span class="chip-dot"></span>Heavy</button>
+    <button class="filter-chip fc-varies" id="fc-varies" onclick="toggleFilter('varies')"><span class="chip-dot"></span>Varies</button>
   </div>
-  <div class="view-toggle">
-    <button class="vtbtn active" id="vt-grid" onclick="setView('grid')" title="Grid">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
-    </button>
-    <button class="vtbtn" id="vt-list" onclick="setView('list')" title="List">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
-    </button>
+  <div class="toolbar-right">
+    <div class="view-toggle">
+      <button class="vtbtn active" id="vt-grid" onclick="setView('grid')" title="Grid view">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      </button>
+      <button class="vtbtn" id="vt-list" onclick="setView('list')" title="List view">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
+      </button>
+    </div>
+    <span class="result-count" id="result-count"></span>
   </div>
-  <span class="result-count" id="result-count"></span>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<!-- APP BODY -->
+<div class="app-body">
   <nav class="sidebar" id="sidebar"></nav>
   <div class="content" id="content"></div>
   <div class="detail-panel hidden" id="detail-panel">
-    <div class="dp-inner" id="dp-inner"></div>
+    <div class="dp-body" id="dp-body"></div>
   </div>
 </div>
 
-</div><!-- .shell -->
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-left">
+    <svg width="80" height="12" viewBox="0 0 106 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M9.02 0H6.98L0 16h2.56l1.72-4.08h7.44L13.44 16H16L9.02 0ZM5.2 9.68l2.8-6.64 2.8 6.64H5.2Z" fill="white" opacity=".4"/>
+      <path d="M25.36 8.6c-1.56-.44-2.64-.84-2.64-1.88 0-.92.8-1.52 1.96-1.52 1.08 0 2.08.44 2.96 1.24l1.52-1.76C27.8 3.48 26.4 2.88 24.68 2.88c-2.56 0-4.28 1.52-4.28 3.96 0 2.44 1.84 3.2 3.88 3.76 1.64.44 2.64.88 2.64 1.96 0 1-.76 1.6-2.12 1.6-1.28 0-2.44-.52-3.44-1.52L19.8 14.2c1.24 1.24 2.84 1.92 4.88 1.92 2.72 0 4.44-1.52 4.44-4C29.12 9.88 27.28 9.12 25.36 8.6Z" fill="white" opacity=".4"/>
+      <path d="M37.64 13.56V5.04H41.6V2.88H31.4v2.16h3.96v8.52H37.64Z" fill="white" opacity=".4"/>
+      <path d="M52.56 13.08C51.6 13.6 50.4 13.88 49.2 13.88c-2.88 0-4.88-2-4.88-4.88S46.32 4.12 49.2 4.12c1.2 0 2.36.28 3.32.8l1-2c-1.2-.68-2.72-1.04-4.36-1.04-4.16 0-7.24 2.96-7.24 7.12s3.08 7.12 7.24 7.12c1.64 0 3.12-.36 4.36-1.04l-1-2Z" fill="white" opacity=".4"/>
+      <path d="M63.6 2.88H61.32L57.08 8.4V2.88H54.8V16h2.28V9.28l4.52 6.72H64L59.12 9l4.48-6.12Z" fill="white" opacity=".4"/>
+    </svg>
+    <span class="footer-text">© 2026 Autodesk, Inc.</span>
+    <span class="footer-text">·</span>
+    <a href="#" class="footer-link">APS Developer Enablement</a>
+    <span class="footer-text">·</span>
+    <a href="https://aps.autodesk.com" class="footer-link" target="_blank">aps.autodesk.com</a>
+  </div>
+  <span class="footer-right">Phase 1 Capability Discovery · April 2026 · Internal Research Document</span>
+</footer>
 
 <script>
-// ─── Data ────────────────────────────────────────────────────────────────────
+// ─── Data ─────────────────────────────────────────────────────────────────────
 const ENGINES = {
-"Revit":{
-  color:"var(--revit)",scripting:"C# .NET — IExternalDBApplication (RevitAPI.dll only)",
-  caps:[
-    {cat:"File I/O",name:"Open project file (RVT)",w:"Light",desc:"Open a Revit project file from OSS/ACC storage for read or write operations. Downloaded to working directory before engine starts.",inp:"RVT",out:"—",mech:"rvtApp.OpenDocumentFile(path)",src:"aps-revit-file-parameters-exchange"},
-    {cat:"File I/O",name:"Open Revit Cloud model (RCW)",w:"Light",desc:"Open a cloud-workshared Revit model directly in ACC using region + ProjectGuid + ModelGuid. Requires 3-legged OAuth adsk3LeggedToken argument.",inp:"ACC cloud model (C4RModel)",out:"—",mech:"ModelPathUtils.ConvertCloudGUIDsToCloudPath()",src:"aps-revit-rcw-parameters-exchange"},
-    {cat:"File I/O",name:"Save / export modified RVT",w:"Light",desc:"Save the modified Revit project file to output, uploaded to OSS or ACC/BIM360.",inp:"RVT (in memory)",out:"RVT",mech:"doc.Save() / doc.SaveAs()",src:"Multiple Revit DA samples"},
-    {cat:"File I/O",name:"Open / create Revit Family file (RFA)",w:"Medium",desc:"Open an existing RFA for modification, or create a new RFA from a family template (.rft).",inp:"RFA / RFT",out:"RFA",mech:"rvtApp.NewFamilyDocument(templatePath)",src:"aps-create-revit-family"},
-    {cat:"File I/O",name:"Upgrade Revit file version",w:"Medium",desc:"Open a Revit file from an older version in the current engine and save — upgrading the file format.",inp:"RVT/RFA (older version)",out:"RVT/RFA (upgraded)",mech:"Open with current engine; auto-upgrades on open",src:"aps-upgrade-revit-files"},
-    {cat:"File I/O",name:"Migrate Revit Cloud models between ACC projects",w:"Heavy",desc:"Move RCW models from one BIM360/ACC project to another, including version migration to Revit 2025/2026.",inp:"ACC RCW model",out:"ACC RCW model (destination)",mech:"RCW migration logic; 3-legged token for source + dest",src:"aps-revit-rcw-migrate-automation"},
-    {cat:"Parameter Operations",name:"Read element parameters",w:"Light",desc:"Read instance and type parameters (built-in, shared, project) from any Revit element.",inp:"RVT/RFA",out:"JSON/CSV/Excel",mech:"element.get_Parameter(BuiltInParameter.*)",src:"aps-revit-file-parameters-exchange"},
-    {cat:"Parameter Operations",name:"Write / modify element parameters",w:"Light",desc:"Update instance or type parameter values on Revit elements. Must be wrapped in a Revit Transaction.",inp:"RVT + data file",out:"RVT (modified)",mech:"Transaction t; element.get_Parameter().Set(value)",src:"aps-revit-file-parameters-exchange"},
-    {cat:"Parameter Operations",name:"Export all parameters to Excel",w:"Light",desc:"Enumerate all elements and export parameter values to an Excel spreadsheet. High-value narrow use case.",inp:"RVT/RCW",out:"XLSX",mech:"FilteredElementCollector + LookupParameter iteration",src:"aps-revit-rcw-parameters-exchange"},
-    {cat:"Parameter Operations",name:"Read/write shared parameters",w:"Light",desc:"Access shared parameter definitions (with GUIDs) across project or family documents.",inp:"RVT/RFA",out:"SPF/JSON",mech:"DefinitionFile; ExternalDefinition; SharedParameterElement",src:"Autodesk support docs"},
-    {cat:"Data Extraction",name:"Extract element properties (FilteredElementCollector)",w:"Light",desc:"Query and extract properties, geometry, relationships, and metadata from any element category. The most fundamental Revit DA capability.",inp:"RVT",out:"JSON/CSV/XML",mech:"FilteredElementCollector; OfClass() / OfCategory()",src:"GitHub topic: design-automation-revit"},
-    {cat:"Data Extraction",name:"Extract schedule data",w:"Light",desc:"Access ViewSchedule objects to read rows and cell values — quantity takeoffs, door/room schedules, material takeoffs.",inp:"RVT",out:"CSV/Excel/JSON",mech:"ViewSchedule; GetCellText(SectionType.Body, row, col)",src:"Building Coder blog"},
-    {cat:"Data Extraction",name:"Extract quantities for cost budgeting",w:"Light",desc:"Extract element quantities (areas, volumes, lengths, counts) and produce cost budget estimates.",inp:"RVT",out:"JSON/Excel",mech:"FilteredElementCollector; element geometry APIs",src:"GitHub: Extract quantities and create cost budgets"},
-    {cat:"Data Extraction",name:"Extract Revit Assets to BIM360",w:"Light",desc:"Extract asset information from Revit elements and push to BIM360 Assets module via Data Management API.",inp:"RVT",out:"BIM360 Assets (via webhook)",mech:"FilteredElementCollector + BIM360 Assets API in onComplete",src:"GitHub: Extract Revit Assets to BIM360"},
-    {cat:"Data Extraction",name:"Export views to images",w:"Medium",desc:"Export 3D views, floor plans, sections, and elevations to raster images for thumbnails and reports.",inp:"RVT",out:"PNG/JPEG",mech:"ImageExportOptions; doc.ExportImage()",src:"Building Coder blog"},
-    {cat:"Model Creation",name:"Create Revit family from template",w:"Medium",desc:"Create a new parametric Revit family (RFA) from a family template — defining geometry, parameters, materials.",inp:"RFT (family template)",out:"RFA",mech:"rvtApp.NewFamilyDocument(templatePath); FamilyManager",src:"aps-create-revit-family"},
-    {cat:"Model Creation",name:"Create model elements",w:"Medium",desc:"Create new Revit model elements of any category — walls, floors, rooms, structural members, MEP components.",inp:"RVT (base file)",out:"RVT (with new elements)",mech:"Wall.Create(); Floor.Create(); Transaction required",src:"SketchIt sample"},
-    {cat:"Model Creation",name:"Create new workshared cloud Revit model",w:"Heavy",desc:"Create a brand-new Revit Cloud Worksharing (RCW) model directly within Automation.",inp:"RVT template",out:"New ACC RCW model",mech:"Document.SaveAsCloudModel() (Revit 2021+ API)",src:"APS blog: DA supports Revit Cloud Model"},
-    {cat:"Model Modification",name:"Modify existing model elements",w:"Medium",desc:"Update existing Revit elements — change geometry, modify materials, reassign types, update constraints.",inp:"RVT",out:"RVT (modified)",mech:"Element.Location; element.ChangeTypeId(); Transaction required",src:"DEV.to blog; multiple samples"},
-    {cat:"Model Modification",name:"Delete model elements",w:"Light",desc:"Delete elements by category, type, or element ID — remove placeholder content before re-population.",inp:"RVT",out:"RVT (modified)",mech:"doc.Delete(ElementId); Transaction required",src:"Building Coder blog"},
-    {cat:"Model Modification",name:"Synchronize model with central (cloud)",w:"Medium",desc:"Synchronize changes back to the RCW central file. Publish requires a separate DM API call in the onComplete webhook.",inp:"RCW model (in memory)",out:"Updated RCW central in ACC",mech:"doc.SynchronizeWithCentral(); PublishModel via DM API",src:"aps-revit-rcw-parameters-exchange"},
-    {cat:"Drawing & Documentation Generation",name:"Export to IFC",w:"Medium",desc:"Export a Revit model to IFC format for BIM interoperability. Supports IFC2x3 and IFC4.",inp:"RVT",out:"IFC",mech:"IFCExportOptions; doc.Export(folder, filename, options)",src:"bim42.com DA for Revit tutorial"},
-    {cat:"Drawing & Documentation Generation",name:"Export to DWG",w:"Medium",desc:"Export Revit views or the full model to DWG format for downstream CAD workflows.",inp:"RVT",out:"DWG",mech:"DWGExportOptions; doc.Export()",src:"Revit API documentation"},
-    {cat:"Drawing & Documentation Generation",name:"Plot / export sheets to PDF",w:"Medium",desc:"Print Revit sheets to PDF — enabling automated generation of construction documentation packages.",inp:"RVT",out:"PDF",mech:"PrintManager; ViewSheetSetting; doc.Print()",src:"Building Coder blog"},
-    {cat:"Drawing & Documentation Generation",name:"Export schedules to custom formats",w:"Light",desc:"Read ViewSchedule data and output in Excel/CSV/JSON for ERP, cost management, or reporting.",inp:"RVT",out:"XLSX/CSV/JSON",mech:"ViewSchedule.GetCellText(); custom serialization",src:"Building Coder (nightly extraction)"},
-    {cat:"Agentic & MCP Integration",name:"Revit automation via MCP server",w:"Varies",desc:"An AI assistant (Claude, VS Code Copilot) orchestrates Revit WorkItems via an MCP remote server. Enables describe-and-do Revit workflows. Published Feb 2026 as proof-of-concept.",inp:"Natural language + ACC model",out:"WorkItem result + modified RVT",mech:".NET MCP server (SSE); RevitAutomationTools",src:"aps-sample-mcp-server-revit-automation (Feb 2026)"},
-  ]},
-
-"AutoCAD":{
-  color:"var(--autocad)",scripting:"C# .NET ObjectARX, AutoLISP (no vla-*), C++ CRX",
-  caps:[
-    {cat:"File I/O",name:"Open DWG file",w:"Light",desc:"Open an AutoCAD DWG file from OSS/BIM360 working directory for processing.",inp:"DWG",out:"—",mech:"Via AutoCAD core engine; AutoLISP — loadMaxFile",src:"Multiple AutoCAD DA samples"},
-    {cat:"File I/O",name:"Create new DWG file",w:"Light",desc:"Create a brand-new DWG drawing from scratch, starting from a template (.dwt) or blank document.",inp:"DWT (optional)",out:"DWG",mech:"new Database(); db.SaveAs()",src:"AutoCAD API documentation"},
-    {cat:"File I/O",name:"Save / export DWG",w:"Light",desc:"Save the modified or newly created DWG file to output, optionally in DXF format.",inp:"DWG (in memory)",out:"DWG/DXF",mech:"db.SaveAs(); AutoLISP — (command \"SAVEAS\")",src:"Multiple AutoCAD DA samples"},
-    {cat:"Model Creation",name:"Create geometric entities",w:"Light",desc:"Create all drawing entity types: lines, arcs, circles, polylines, ellipses, splines, hatches, text, dimensions, leaders.",inp:"DWG",out:"DWG (with new entities)",mech:"Line, Arc, Circle, Polyline, DBText, MText classes; (entmake)",src:"AutoCAD API docs; forge.learning UpdateParam"},
-    {cat:"Data Extraction",name:"Read / query existing entities",w:"Light",desc:"Traverse the entity database, filter by type or layer, read coordinates, text content, block attributes.",inp:"DWG",out:"JSON/text",mech:"BlockTable; ModelSpace iteration; (ssget), (entget)",src:"AutoCAD API docs; TextExtractApp (2027 repo)"},
-    {cat:"Model Modification",name:"Modify / delete existing entities",w:"Light",desc:"Update entity properties (position, color, layer, text content, geometry), or delete entities.",inp:"DWG",out:"DWG (modified)",mech:"entity.UpgradeOpen(); entity.Erase(); (entmod), (entdel)",src:"forge.learning UpdateParam sample"},
-    {cat:"Model Modification",name:"Layer management",w:"Light",desc:"Create, rename, freeze, lock, or delete drawing layers. Set layer color, linetype, and lineweight.",inp:"DWG",out:"DWG (modified)",mech:"LayerTable; LayerTableRecord; (command \"LAYER\")",src:"AutoCAD API docs"},
-    {cat:"Data Extraction",name:"CAD Standards compliance checking",w:"Light",desc:"Check a DWG against defined CAD standards (layer naming, linetype, text styles, dimension styles) and report or auto-correct violations.",inp:"DWG + standards definition",out:"Compliance report/corrected DWG",mech:"Custom rules via entity enumeration; AutoLISP",src:"Official APS docs (aps.autodesk.com/automation-apis)"},
-    {cat:"Assembly & Component Operations",name:"Insert blocks with attributes",w:"Light",desc:"Insert block references and set attribute values — e.g. insert a title block and populate project name, number, date.",inp:"DWG + block definition",out:"DWG (with inserted blocks)",mech:"BlockReference; AttributeReference; (command \"INSERT\")",src:"AutoCAD API docs"},
-    {cat:"Assembly & Component Operations",name:"Update title block attributes",w:"Light",desc:"Update attribute values in existing title blocks across multiple drawings — revision number, engineer name, date.",inp:"DWG (with title block)",out:"DWG (updated)",mech:"BlockReference iteration; AttributeReference.TextString",src:"Official APS docs (explicitly listed)"},
-    {cat:"Data Extraction",name:"Extract block and attribute data",w:"Light",desc:"Enumerate all block insertions and extract attribute values — parts lists, title block registers, drawing indexes.",inp:"DWG",out:"CSV/JSON/Excel",mech:"BlockReference; AttributeCollection; (ssget)+(entget)",src:"TextExtractApp (AutoCAD 2027 repo)"},
-    {cat:"Drawing & Documentation Generation",name:"Plot drawing to PDF",w:"Medium",desc:"Configure plot settings programmatically and print a DWG layout or model space to PDF.",inp:"DWG",out:"PDF",mech:"PlotInfo; PlotSettings; PlotEngine; (command \"-PLOT\")",src:"Official APS docs (explicitly listed)"},
-    {cat:"Drawing & Documentation Generation",name:"Export DWG to image (PNG/JPEG)",w:"Medium",desc:"Export AutoCAD drawing views or layouts to raster image formats for thumbnail generation or web display.",inp:"DWG",out:"PNG/JPEG",mech:"PlotEngine with raster device; EXPORT command",src:"AutoCAD API docs"},
-    {cat:"Drawing & Documentation Generation",name:"Batch plot multiple drawings",w:"Medium",desc:"Submit multiple WorkItems in parallel — each processing a separate DWG — for batch plot operations.",inp:"Multiple DWGs",out:"Multiple PDFs",mech:"Parallel WorkItem submissions via REST API",src:"APS architecture (WorkItem parallelism)"},
-    {cat:"Drawing & Documentation Generation",name:"Purge unused objects",w:"Light",desc:"Purge unused block definitions, layers, linetypes, text styles from a DWG to reduce file size.",inp:"DWG",out:"DWG (purged)",mech:"db.Purge(); AutoLISP — (command \"PURGE\" \"ALL\" \"\" \"N\")",src:"Official APS docs (explicitly listed)"},
-    {cat:"Scripting & Plugin Execution",name:"Run AutoLISP routines",w:"Light",desc:"Execute AutoLISP (.lsp/.fas) routines. Core functions only — no vla-*/ActiveX COM functions. No GUI permitted.",inp:"DWG + .lsp/.fas (in AppBundle)",out:"DWG/custom",mech:"AutoLISP (core functions only)",src:"forge.learning; TextExtractApp (2027 repo)"},
-    {cat:"Scripting & Plugin Execution",name:"Run .NET ObjectARX plugins",w:"Light",desc:"Load compiled C# or VB.NET plugins. AutoCAD 2025 requires .NET 8; AutoCAD 2027 requires .NET 10.",inp:"DWG + .NET DLL",out:"DWG/custom",mech:"AcDbMgd.dll; AcCoreMgd.dll; .NET 8/10",src:"forge.learning; AutoCAD 2027 engine blog"},
-    {cat:"Scripting & Plugin Execution",name:"Run C++ ObjectARX plugins (CRX)",w:"Light",desc:"Load compiled C++ ObjectARX plugins (.crx) for high-performance DWG manipulation.",inp:"DWG + .crx",out:"DWG/custom",mech:"C++ ObjectARX SDK",src:"forge.learning; AutoCAD 2027 engine blog"},
-    {cat:"Format Conversion & Export",name:"Convert DWG to DXF",w:"Light",desc:"Export an AutoCAD DWG file to DXF format for interoperability with non-AutoCAD applications.",inp:"DWG",out:"DXF",mech:"db.DxfOut(); (command \"DXFOUT\")",src:"AutoCAD API docs"},
-  ]},
-
-"Inventor":{
-  color:"var(--inventor)",scripting:"C# .NET (Inventor Server API), iLogic (VB.NET rules)",
-  caps:[
-    {cat:"File I/O",name:"Open part file (IPT)",w:"Light",desc:"Open an Inventor part file for read, modification, or export. Downloaded to working directory before engine starts.",inp:"IPT",out:"—",mech:"appInv.Documents.Open(filePath)",src:"Multiple Inventor DA samples"},
-    {cat:"File I/O",name:"Open assembly file (IAM)",w:"Light",desc:"Open an Inventor assembly including all referenced component files. All referenced files must be in the working directory.",inp:"IAM + referenced IPT/IAM",out:"—",mech:"appInv.Documents.Open(iamPath)",src:"aps-run-ilogic"},
-    {cat:"File I/O",name:"Open drawing file (IDW / DWG)",w:"Light",desc:"Open an Inventor drawing file for view generation, annotation, or export.",inp:"IDW/DWG",out:"—",mech:"appInv.Documents.Open(drawingPath)",src:"Inventor DA drawing samples"},
-    {cat:"File I/O",name:"Save / export Inventor files",w:"Light",desc:"Save the modified Inventor part, assembly, or drawing file as output.",inp:"IPT/IAM/IDW (in memory)",out:"IPT/IAM/IDW/DWG",mech:"doc.Save(); doc.SaveAs()",src:"Multiple Inventor DA samples"},
-    {cat:"File I/O",name:"Bulk file migration / version upgrade",w:"Medium",desc:"Open Inventor files from an older version in the current engine and save, upgrading the file format.",inp:"IPT/IAM (older version)",out:"IPT/IAM (upgraded)",mech:"Open with current engine; auto-upgrades on open",src:"Official APS docs (Inventor use cases)"},
-    {cat:"Parameter Operations",name:"Read user and model parameters",w:"Light",desc:"Read all user-defined, model, and reference parameters — name, value, unit, expression, comment.",inp:"IPT/IAM",out:"JSON/Excel/CSV",mech:"PartComponentDefinition.Parameters; param.Name, param.Value",src:"aps-run-ilogic; Inventor API docs"},
-    {cat:"Parameter Operations",name:"Write / modify user parameters",w:"Light",desc:"Change user parameter values to drive model geometry — triggers model regeneration.",inp:"IPT/IAM + parameter data",out:"IPT/IAM (updated geometry)",mech:"param.Expression = newValue; triggers model update",src:"aps-run-ilogic (width/height update sample)"},
-    {cat:"Parameter Operations",name:"Execute iLogic rules",w:"Medium",desc:"Run iLogic rules embedded in documents or loaded from .iLogicVb files. Uses ThisDoc.Document (not ActiveDocument) in cloud.",inp:"IPT/IAM (with rules) + optional .iLogicVb",out:"IPT/IAM (updated per rule)",mech:"iLogicVb runtime; rule.Run()",src:"aps-run-ilogic; APS blog: prepare-iLogic-rules-for-DA"},
-    {cat:"Parameter Operations",name:"Manage model states (iPart / iAssembly)",w:"Light",desc:"Access iPart/iAssembly configurations and model states. Inventor 2026 adds write access to ModelStatesInEdit.",inp:"IPT (iPart) / IAM (iAssembly)",out:"IPT/IAM or derived output",mech:"ModelStates; iPart factory; 2026: ModelStatesInEdit",src:"Autodesk DevBlog 2026"},
-    {cat:"Data Extraction",name:"Query and export Bill of Materials",w:"Light",desc:"Access the full Inventor BOM API: structured/parts-only/all-parts views, quantity overrides. Highest-value Inventor DA use case.",inp:"IAM",out:"CSV/Excel/JSON/XML",mech:"BOM object; BOMView; BOM.Export()",src:"Inventor API help: BOM overview"},
-    {cat:"Data Extraction",name:"Read iProperties (design metadata)",w:"Light",desc:"Read and write Inventor iProperties — author, description, part number, material, mass, revision, custom properties.",inp:"IPT/IAM/IDW",out:"JSON/XML/Excel",mech:"Document.PropertySets; iProperties collection",src:"Inventor API docs; Autodesk DevBlog 2026"},
-    {cat:"Data Extraction",name:"Read mass properties",w:"Medium",desc:"Calculate and extract physical mass properties — mass, volume, surface area, center of gravity, moments of inertia.",inp:"IPT/IAM",out:"JSON/custom",mech:"PartComponentDefinition.MassProperties",src:"Inventor API docs (mass properties)"},
-    {cat:"Assembly & Component Operations",name:"Traverse assembly component hierarchy",w:"Light",desc:"Navigate the full assembly tree — component occurrences, leaf occurrences, sub-assemblies, skeleton files.",inp:"IAM",out:"JSON/CSV (component list)",mech:"AssemblyComponentDefinition.Occurrences; AllLeafOccurrences",src:"design-and-motion.net blog; Inventor API docs"},
-    {cat:"Drawing & Documentation Generation",name:"Create drawing views",w:"Medium",desc:"Create standard drawing views (base, projected, section, detail, isometric) on drawing sheets.",inp:"IPT or IAM",out:"IDW",mech:"DrawingDocument; Sheet.DrawingViews.AddBaseView()",src:"iLogic drawing automation (AU); Inventor API docs"},
-    {cat:"Drawing & Documentation Generation",name:"Create and populate drawing sheets",w:"Medium",desc:"Create new sheets, set size (A0–A4, ANSI), add title blocks, manage sheet properties. Up to ~20 sheets per WorkItem.",inp:"IDW template or empty",out:"IDW",mech:"DrawingDocument.Sheets; Sheet.Title; Sheet.DrawingViews",src:"Assembly hierarchy blog; Inventor API docs"},
-    {cat:"Drawing & Documentation Generation",name:"Add annotations, dimensions, parts lists",w:"Medium",desc:"Add drawing annotations, dimensions (linear, angular, radial), and parts lists (BOM table). Inventor 2026 adds sketch break lines and ID tag placement.",inp:"IDW (with views)",out:"IDW (annotated)",mech:"Dimension objects; PartsListObject; LeaderNote; RevisionTable",src:"Autodesk DevBlog 2026; Inventor API docs"},
-    {cat:"Assembly & Component Operations",name:"Automate assembly simplification",w:"Heavy",desc:"New in Inventor 2026: use the Simplify environment API to programmatically simplify assembly geometry. Inventor 2026 engine required.",inp:"IAM",out:"IAM (simplified)",mech:"SimplifyFeatures (Inventor 2026 API)",src:"Autodesk DevBlog 2026 (Simplify environment announcement)"},
-    {cat:"Format Conversion & Export",name:"Export to STEP",w:"Medium",desc:"Export Inventor part or assembly to STEP format (ISO 10303) for interoperability with other CAD systems.",inp:"IPT/IAM",out:"STEP (.stp)",mech:"TranslatorAddIn; doc.SaveAs() with STEP translator",src:"Inventor API docs"},
-    {cat:"Format Conversion & Export",name:"Export to IFC4x3 (Inventor 2026+)",w:"Medium",desc:"Export assemblies to IFC4x3 preserving assembly structure and metadata. Previously assemblies were flattened — now structure is preserved. Requires Inventor 2026 engine.",inp:"IAM",out:"IFC4x3",mech:"IFC4x3 export translator (Inventor 2026)",src:"Autodesk DevBlog 2026 (IFC4x3 announcement)"},
-    {cat:"Format Conversion & Export",name:"Export to OBJ, STL, SAT",w:"Medium",desc:"Export Inventor geometry to neutral 3D mesh formats: OBJ (visualisation), STL (3D printing), SAT (ACIS).",inp:"IPT/IAM",out:"OBJ/STL/SAT",mech:"TranslatorAddIn; doc.SaveAs() with format translator",src:"Inventor API docs; APS Inventor DA documentation"},
-    {cat:"Format Conversion & Export",name:"Export to PDF",w:"Medium",desc:"Export Inventor drawing sheets to PDF for documentation distribution.",inp:"IDW",out:"PDF",mech:"PDF translator via PrintManager or SaveAs with PDF AddIn",src:"Inventor API docs"},
-  ]},
-
-"3ds Max":{
-  color:"var(--dsmax)",scripting:"MAXScript (primary), Python (pymxs), .NET (C#), C++ — broadest scripting support",
-  caps:[
-    {cat:"File I/O",name:"Open 3ds Max scene file",w:"Medium",desc:"Open an existing .MAX scene file loading all objects, materials, lights, cameras, and animations.",inp:"MAX",out:"—",mech:"loadMaxFile filePath; MaxInterfaces.COREInterface.LoadFromFile()",src:"forge.learning 3ds Max AppBundle guide"},
-    {cat:"File I/O",name:"Create / save MAX scene",w:"Light",desc:"Create a new 3ds Max scene from scratch or save a modified scene to the output directory.",inp:"MAX (optional)",out:"MAX",mech:"saveMaxFile filePath",src:"forge.learning; APS 3ds Max DA docs"},
-    {cat:"File I/O",name:"Import third-party 3D formats",w:"Medium",desc:"Import geometry from FBX, OBJ, DWG, DXF, DAE (Collada), STL, 3DS, and others. One of the largest import format libraries of any 3D application.",inp:"FBX/OBJ/DWG/DXF/DAE/STL/3DS",out:"—",mech:"importFile filePath; format-specific import options",src:"3ds Max API docs; APS 3ds Max DA overview"},
-    {cat:"Model Creation",name:"Create and modify geometry",w:"Medium",desc:"Create 3D geometry primitives (box, sphere, cylinder, plane) and modify using editable mesh or editable poly — vertex/edge/face manipulation.",inp:"MAX or import formats",out:"MAX",mech:"Box(); Sphere(); convertTo mesh; polyOp.*",src:"3ds Max API docs; MAXScript reference"},
-    {cat:"Model Modification",name:"Apply non-destructive modifiers",w:"Medium",desc:"Apply modifiers (Bend, Twist, Noise, TurboSmooth, Shell, Symmetry) via the modifier stack — non-destructive parametric modifications.",inp:"MAX",out:"MAX",mech:"addModifier obj (Bend()); .NET — MaxInterfaces",src:"3ds Max API docs; Wikipedia 3ds Max"},
-    {cat:"Model Modification",name:"Boolean operations",w:"Medium",desc:"Perform Boolean operations (Union, Subtraction, Intersection) between 3D objects.",inp:"MAX",out:"MAX",mech:"Boolean compound object; ProBoolean",src:"3ds Max API docs"},
-    {cat:"Model Modification",name:"Mesh optimization / simplification",w:"Heavy",desc:"Reduce polygon count using ProOptimizer or MultiRes modifiers — essential for real-time visualisation, game engines, or web delivery.",inp:"MAX/imported mesh formats",out:"MAX/export formats",mech:"ProOptimizer modifier; percentage vertex reduction",src:"APS 3ds Max DA overview (explicitly mentioned)"},
-    {cat:"Model Modification",name:"Assign and modify materials",w:"Light",desc:"Assign materials (Standard, Physical, Arnold) to scene objects; modify properties (color, reflectivity, roughness, metalness).",inp:"MAX",out:"MAX",mech:"mat = StandardMaterial(); obj.material = mat",src:"3ds Max API docs; MAXScript reference"},
-    {cat:"Model Modification",name:"UV mapping and texture management",w:"Medium",desc:"Apply and modify UV mapping coordinates — planar, cylindrical, spherical, box projection; UV relaxation and unwrapping.",inp:"MAX",out:"MAX",mech:"UVWMap modifier; uvwMap.maptype",src:"3ds Max API docs (UV texture workflow)"},
-    {cat:"Rendering & Visualisation",name:"Batch render scene to image",w:"Heavy",desc:"Render 3D scenes to PNG, JPEG, EXR, TGA, BMP using the active renderer. The most compute-intensive operation in the entire Automation API.",inp:"MAX",out:"PNG/JPEG/EXR/TGA/BMP",mech:"render camera:activeCam output:bitmap",src:"APS 3ds Max DA overview (explicitly listed)"},
-    {cat:"Rendering & Visualisation",name:"Configure render settings",w:"Light",desc:"Set render parameters: output resolution, renderer choice (Arnold, ART, Scanline), camera selection, render passes, output file format.",inp:"MAX",out:"Rendered image",mech:"renderers.current = Arnold_Renderer(); renderWidth/Height",src:"3ds Max API docs; MAXScript reference"},
-    {cat:"Rendering & Visualisation",name:"Animation rendering (frame sequences)",w:"Heavy",desc:"Render multiple frames from an animated scene — turntable animations, product preview videos, design review animations as image sequences.",inp:"MAX (with animation)",out:"Image sequence (PNG/JPEG/EXR)",mech:"animate on; render range:#range start:0 end:100",src:"3ds Max API docs"},
-    {cat:"Assembly & Component Operations",name:"Scene object hierarchy manipulation",w:"Light",desc:"Access and modify the scene object hierarchy — parent/child relationships, group management, layer assignment, visibility, transforms.",inp:"MAX",out:"MAX",mech:"obj.parent; group objects; setTransform; in layer",src:"3ds Max API docs; Scene Explorer API"},
-    {cat:"Assembly & Component Operations",name:"Camera and light management",w:"Light",desc:"Create, modify, and position cameras and lights — focal length, target point, light color, intensity, shadow settings.",inp:"MAX",out:"MAX",mech:"FreeCamera(); OmniLight(); light.rgb; light.multiplier",src:"3ds Max API docs"},
-    {cat:"Format Conversion & Export",name:"Export to FBX",w:"Medium",desc:"Export 3ds Max scenes to FBX for delivery to game engines (Unity, Unreal), visualisation platforms, and downstream 3D workflows.",inp:"MAX",out:"FBX",mech:"exportFile filePath using:FBXEXP",src:"3ds Max API docs"},
-    {cat:"Format Conversion & Export",name:"Export to OBJ, STL, DXF",w:"Medium",desc:"Export geometry to neutral 3D formats: OBJ (wavefront), STL (3D printing), DXF (AutoCAD interchange).",inp:"MAX",out:"OBJ/STL/DXF",mech:"exportFile filePath using:ObjExp / STLExport",src:"3ds Max API docs"},
-    {cat:"Format Conversion & Export",name:"Publish to web-ready formats",w:"Medium",desc:"Export or publish 3ds Max content for display in the Autodesk Viewer or third-party web platforms — enables online product configurators.",inp:"MAX",out:"SVF/SVF2 / glTF (via Model Derivative)",mech:"MAXScript export + Model Derivative API (client app)",src:"APS 3ds Max DA overview (publishing explicitly mentioned)"},
-    {cat:"Scripting & Plugin Execution",name:"Run MAXScript (.ms files)",w:"Varies",desc:"Execute MAXScript to orchestrate any 3ds Max operation. The primary automation interface for the 3ds Max DA engine. Can call .NET classes via dotNetClass().",inp:"MAX + .ms file (in AppBundle)",out:"MAX or any export format",mech:"fileIn scriptPath; fn AutomationScript = ...",src:"forge.learning 3ds Max AppBundle guide (da_script.ms)"},
-    {cat:"Scripting & Plugin Execution",name:"Run Python scripts",w:"Varies",desc:"Execute Python scripts in 3ds Max as an alternative to MAXScript for developers who prefer Python syntax.",inp:"MAX + .py file",out:"MAX/custom",mech:"Python — pymxs module",src:"forge.learning 3ds Max AppBundle guide (Python listed)"},
-    {cat:"Scripting & Plugin Execution",name:"Load and run .NET / C++ plugins",w:"Varies",desc:"Load compiled .NET (C#) or C++ plugins and execute automation via MAXScript's dotNetClass() binding.",inp:"MAX + .NET DLL or C++ plugin",out:"MAX/custom",mech:"dotNetClass(\"Namespace.ClassName\"); da.Method()",src:"forge.learning 3ds Max guide (dotNetClass example)"},
-  ]},
-
-"Fusion":{
-  color:"var(--fusion)",scripting:"TypeScript ONLY on cloud (Python/C++ desktop NOT supported in cloud engine)",
-  caps:[
-    {cat:"File I/O",name:"Read native Fusion designs (F3D)",w:"Light",desc:"Open and read native Fusion design files stored in a user's Fusion Team hub — geometry, component structure, parameters, sketches, features.",inp:"F3D (from Fusion Team hub)",out:"Custom output (JSON/file)",mech:"adsk.fusion.Design; RootComponent; BRepBodies; Parameters",src:"APS Fusion DA blog (Feb/May 2025)"},
-    {cat:"File I/O",name:"Write / store to Fusion Team hub",w:"Light",desc:"Store automation outcomes directly back to the user's Fusion Team hub — versioned and accessible via user credentials.",inp:"F3D (modified in memory)",out:"F3D in Fusion Team hub",mech:"Fusion cloud data access (3-legged OAuth); DataFiles; DataFolders",src:"APS beta blog: store automation outcomes in Fusion Team hub"},
-    {cat:"File I/O",name:"Parallel job execution",w:"Varies",desc:"Submit multiple Fusion Automation WorkItems simultaneously to process designs in parallel — dramatically reducing throughput time for batch operations.",inp:"Multiple F3D files",out:"Multiple processed outputs",mech:"Multiple WorkItem submissions via REST API",src:"APS beta blog: run multiple automation jobs simultaneously"},
-    {cat:"Format Conversion & Export",name:"Read third-party CAD files",w:"Medium",desc:"Import and read CAD files from third-party formats supported by Fusion (STEP, IGES, OBJ, STL, DXF, DWG) for analysis or conversion.",inp:"STEP/IGES/OBJ/STL/DXF/DWG",out:"F3D or analysis output",mech:"ImportManager; Fusion import utilities",src:"APS blog: Read and analyze native Fusion designs or third-party CAD files"},
-    {cat:"Model Creation",name:"Sketching",w:"Light",desc:"Create and modify 2D sketches — add geometry (lines, arcs, circles, splines), apply constraints (coincident, tangent, parallel), add dimensions.",inp:"F3D",out:"F3D (with sketches)",mech:"Sketches.add(); SketchLines; GeometricConstraints; SketchDimensions",src:"Fusion Developer API docs"},
-    {cat:"Model Creation",name:"3D solid/surface modeling",w:"Medium",desc:"Create and modify 3D solid bodies (extrude, revolve, sweep, loft, shell, combine, chamfer, fillet) and surface bodies using the full Fusion B-Rep modeling kernel.",inp:"F3D",out:"F3D",mech:"ExtrudeFeatures.add(); RevolveFeatures; FilletFeatures; etc.",src:"Fusion Developer API docs (full feature list)"},
-    {cat:"Model Modification",name:"Mesh editing",w:"Medium",desc:"Create, import, and modify mesh bodies — for additive manufacturing preparation, scan data processing, or visualisation.",inp:"F3D/STL/OBJ",out:"F3D/STL/OBJ",mech:"MeshBodies; MeshBody; mesh editing operations",src:"APS beta blog: mesh editing listed in capability summary"},
-    {cat:"Assembly & Component Operations",name:"Assembly design and component management",w:"Medium",desc:"Create and manage multi-component assemblies — add components, set joints (rigid, revolute, slider, cylindrical), define constraints.",inp:"F3D",out:"F3D",mech:"Occurrences.addNewComponent(); Joints.add(); JointMotion",src:"Fusion Developer API docs; APS blog (assemblies listed)"},
-    {cat:"Parameter Operations",name:"Parameter-driven design and product configurator",w:"Light",desc:"Read and modify design parameters to drive geometry changes — automated product configurators, variant generation, mass customisation. Fusion Configurator Demo publicly available on APS GitHub.",inp:"F3D + parameter values (JSON)",out:"F3D (parametric variant)",mech:"Design.allParameters; UserParameters; param.expression = newValue",src:"Fusion Configurator Demo (APS GitHub); APS GA blog"},
-    {cat:"CAM & Manufacturing",name:"CAM toolpath generation",w:"Heavy",desc:"Automate CAM programming for CNC machining — create setups, select operations (2D contour, adaptive clearing, drilling, 3D surfacing), assign tools, generate toolpaths. Toolpath.com confirmed production adopter.",inp:"F3D (with machined geometry)",out:"F3D (with CAM data)",mech:"CAM object; Setups; Operations; ToolpathGenerations",src:"APS GA blog; Toolpath.com integration"},
-    {cat:"CAM & Manufacturing",name:"Post-processing (NC code generation)",w:"Medium",desc:"Run the CAM post-processor to generate machine-specific NC code from Fusion toolpaths — enabling automated quoting and manufacturing pipeline integration.",inp:"F3D (with CAM setups)",out:"NC code (.nc/.tap/.gcode)",mech:"CAM.postProcess(); PostProcessInput; postConfiguration",src:"APS GA blog; Toolpath.com integration"},
-    {cat:"CAM & Manufacturing",name:"2D flat pattern nesting",w:"Heavy",desc:"Automate 2D nesting of flat patterns (sheet metal, fabric) to minimise material waste using Fusion's built-in nesting algorithms.",inp:"F3D (with flat pattern bodies)",out:"F3D (nested layout)/DXF",mech:"Nesting API; 2D nesting configuration",src:"APS beta blog: 2D and 3D nesting explicitly listed"},
-    {cat:"CAM & Manufacturing",name:"3D additive manufacturing packing (TrueShape)",w:"Heavy",desc:"Automate 3D packing of parts for additive builds (SLS, MJF, SLA) using Fusion's TrueShape packer — maximise parts per build, minimise support. Authentise confirmed production adopter.",inp:"F3D (with 3D bodies)",out:"F3D (packed build layout)",mech:"3D Nesting/Packing API; TrueShape packer",src:"APS GA blog: TrueShape packer explicitly mentioned; Authentise integration"},
-    {cat:"CAM & Manufacturing",name:"Integrate with PLM/PDM/MES",w:"Light",desc:"Connect Fusion Automation outputs to enterprise systems (PLM, PDM, MES) via the cloud API architecture and webhook callbacks.",inp:"F3D + external system data",out:"Modified F3D + system payload",mech:"TypeScript + webhook callbacks; REST API in onComplete",src:"APS GA blog: Integrate into PLM, PDM, or MES workflows"},
-  ]},
+"Revit":{color:"var(--revit)",scripting:"C# .NET — IExternalDBApplication (RevitAPI.dll only · no RevitAPIUI.dll)",caps:[
+  {cat:"File I/O",name:"Open project file (RVT)",w:"Light",desc:"Open a Revit project file from OSS/ACC storage for read or write operations. File is downloaded to the working directory before the engine starts.",inp:"RVT",out:"—",mech:"rvtApp.OpenDocumentFile(path)",src:"aps-revit-file-parameters-exchange; aps-upgrade-revit-files"},
+  {cat:"File I/O",name:"Open Revit Cloud model (RCW)",w:"Light",desc:"Open a cloud-workshared Revit model directly in ACC using region + ProjectGuid + ModelGuid. Requires 3-legged OAuth adsk3LeggedToken argument — no file download step.",inp:"ACC cloud model (C4RModel)",out:"—",mech:"ModelPathUtils.ConvertCloudGUIDsToCloudPath(); rvtApp.OpenDocumentFile(cloudModelPath)",src:"aps-revit-rcw-parameters-exchange; APS blog: DA supports Revit Cloud Model"},
+  {cat:"File I/O",name:"Save / export modified RVT",w:"Light",desc:"Save the modified Revit project file as output, uploaded to OSS or ACC/BIM360.",inp:"RVT (in memory)",out:"RVT",mech:"doc.Save() / doc.SaveAs()",src:"Multiple Revit DA samples"},
+  {cat:"File I/O",name:"Open / create Revit Family file (RFA)",w:"Medium",desc:"Open an existing RFA for modification, or create a new RFA from a family template (.rft).",inp:"RFA / RFT",out:"RFA",mech:"rvtApp.NewFamilyDocument(templatePath); doc.SaveAs(rfaPath)",src:"aps-create-revit-family (window wizard sample)"},
+  {cat:"File I/O",name:"Upgrade Revit file version",w:"Medium",desc:"Open a Revit file from an older version in the current engine and save — automatically upgrading the file format. Supports bulk folder upgrades via parallel WorkItems.",inp:"RVT / RFA (older version)",out:"RVT / RFA (upgraded)",mech:"Open with current engine; auto-upgrades on open",src:"aps-upgrade-revit-files"},
+  {cat:"File I/O",name:"Migrate Revit Cloud models between ACC projects",w:"Heavy",desc:"Move RCW models from one BIM360/ACC project to another, including version migration to Revit 2025 or 2026. Requires 3-legged token for both source and destination.",inp:"ACC RCW model (C4RModel)",out:"ACC RCW model (destination project)",mech:"RCW migration logic; 3-legged token for source + destination",src:"aps-revit-rcw-migrate-automation"},
+  {cat:"Parameter Operations",name:"Read element parameters",w:"Light",desc:"Read instance and type parameters (built-in, shared, project) from any Revit element — name, value, unit type, and parameter group.",inp:"RVT / RFA",out:"JSON / XML / Excel / CSV",mech:"element.get_Parameter(BuiltInParameter.*); element.LookupParameter(name)",src:"aps-revit-file-parameters-exchange; Building Coder blog"},
+  {cat:"Parameter Operations",name:"Write / modify element parameters",w:"Light",desc:"Update instance or type parameter values on Revit elements. Must be wrapped in a Revit Transaction.",inp:"RVT + data file (Excel/JSON)",out:"RVT (modified)",mech:"Transaction t; element.get_Parameter().Set(value)",src:"aps-revit-file-parameters-exchange (Excel import path)"},
+  {cat:"Parameter Operations",name:"Export all parameters to Excel",w:"Light",desc:"Enumerate all elements in a model and export parameter values to an Excel spreadsheet. Strong candidate for a standalone PLG scope.",inp:"RVT / RCW",out:"XLSX",mech:"FilteredElementCollector + LookupParameter iteration",src:"aps-revit-file-parameters-exchange; aps-revit-rcw-parameters-exchange"},
+  {cat:"Parameter Operations",name:"Read / write shared parameters",w:"Light",desc:"Access shared parameter definitions (with GUIDs) across project or family documents. Enables cross-project parameter consistency.",inp:"RVT / RFA",out:"SPF / JSON",mech:"DefinitionFile; ExternalDefinition; SharedParameterElement",src:"Autodesk support docs; Revit API Forum"},
+  {cat:"Data Extraction",name:"Extract element properties (FilteredElementCollector)",w:"Light",desc:"Query and extract properties, geometry data, relationships, and metadata from any element category in the model. The most fundamental and commonly used Revit DA capability.",inp:"RVT",out:"JSON / CSV / XML",mech:"FilteredElementCollector; OfClass() / OfCategory(BuiltInCategory.*)",src:"GitHub topic: design-automation-revit; Building Coder blog"},
+  {cat:"Data Extraction",name:"Extract schedule data",w:"Light",desc:"Access ViewSchedule objects to read rows and cell values — quantity takeoffs, door/room schedules, material takeoffs. Top developer use case.",inp:"RVT",out:"CSV / Excel / JSON",mech:"FilteredElementCollector for ViewSchedule; schedule.GetCellText(SectionType.Body, row, col)",src:"Building Coder (schedule API); Revit API Forum"},
+  {cat:"Data Extraction",name:"Extract quantities for cost budgeting",w:"Light",desc:"Extract element quantities (areas, volumes, lengths, counts) and produce cost budget estimates for integration with external pricing databases.",inp:"RVT",out:"JSON / Excel",mech:"FilteredElementCollector; element geometry APIs; parameter reads",src:"GitHub sample: Extract quantities and create cost budgets"},
+  {cat:"Data Extraction",name:"Extract Revit Assets to BIM360",w:"Light",desc:"Extract asset information from Revit elements and push to the BIM360 Assets module via Data Management API — enabling asset tracking and lifecycle management.",inp:"RVT",out:"BIM360 Assets module (via webhook)",mech:"FilteredElementCollector + BIM360 Assets API in onComplete",src:"GitHub sample: Extract Revit Assets to BIM360"},
+  {cat:"Data Extraction",name:"Export views to images",w:"Medium",desc:"Export Revit 3D views, floor plans, sections, and elevations to raster images for automated thumbnail generation and report illustration.",inp:"RVT",out:"PNG / JPEG",mech:"ImageExportOptions; doc.ExportImage()",src:"Building Coder blog (nightly data extraction example)"},
+  {cat:"Model Creation",name:"Create Revit family from template",w:"Medium",desc:"Create a new parametric Revit family (RFA) from a family template (.rft) — defining geometry, parameters, family types, materials, and constraints.",inp:"RFT (family template)",out:"RFA",mech:"rvtApp.NewFamilyDocument(templatePath); FamilyManager; Extrusion, Sweep, Blend",src:"aps-create-revit-family; Autodesk-Forge/forge-createfamily-revit"},
+  {cat:"Model Creation",name:"Create model elements",w:"Medium",desc:"Create new Revit model elements of any category — walls, floors, ceilings, rooms, structural members, MEP components. All creation requires a Revit Transaction.",inp:"RVT (base file)",out:"RVT (with new elements)",mech:"Wall.Create(); Floor.Create(); Room placement; Transaction required",src:"SketchIt sample (walls + floors from SVG); Building Coder"},
+  {cat:"Model Creation",name:"Create new workshared cloud Revit model",w:"Heavy",desc:"Create a brand-new Revit Cloud Worksharing (RCW) model directly within Automation — for automated project setup and template deployment workflows.",inp:"RVT template",out:"New ACC RCW model",mech:"Document.SaveAsCloudModel() (Revit 2021+ API)",src:"APS blog: Design Automation supports Revit Cloud Model"},
+  {cat:"Model Modification",name:"Modify existing model elements",w:"Medium",desc:"Update existing Revit elements — change geometry, modify materials, reassign types, update location, modify constraints. Any Revit DB API operation available.",inp:"RVT",out:"RVT (modified)",mech:"Element.Location; element.ChangeTypeId(); Parameter.Set(); Transaction required",src:"DEV.to blog; multiple samples"},
+  {cat:"Model Modification",name:"Delete model elements",w:"Light",desc:"Delete elements by category, type, or element ID — remove placeholder content or purge outdated objects before re-population.",inp:"RVT",out:"RVT (modified)",mech:"doc.Delete(ElementId); Transaction required",src:"Building Coder blog; Revit API docs"},
+  {cat:"Model Modification",name:"Synchronize model with central (cloud)",w:"Medium",desc:"Synchronize changes back to the RCW central file. Publish requires a separate DM API PublishModel call in the onComplete webhook — not available as a Revit API.",inp:"RCW model (in memory)",out:"Updated RCW central file in ACC",mech:"doc.SynchronizeWithCentral(); PublishModel via DM API in webhook",src:"aps-revit-rcw-parameters-exchange"},
+  {cat:"Drawing & Documentation Generation",name:"Export to IFC",w:"Medium",desc:"Export a Revit model to IFC format for BIM interoperability. Supports IFC2x3 and IFC4 export schemes.",inp:"RVT",out:"IFC",mech:"IFCExportOptions; doc.Export(folder, filename, options)",src:"bim42.com DA for Revit tutorial (RVT to IFC)"},
+  {cat:"Drawing & Documentation Generation",name:"Export to DWG",w:"Medium",desc:"Export Revit views or the entire model to DWG format for downstream CAD workflows.",inp:"RVT",out:"DWG",mech:"DWGExportOptions; doc.Export()",src:"Revit API documentation (DWGExportOptions)"},
+  {cat:"Drawing & Documentation Generation",name:"Plot / export sheets to PDF",w:"Medium",desc:"Print Revit sheets to PDF — enabling automated generation of construction documentation packages.",inp:"RVT",out:"PDF",mech:"PrintManager; ViewSheetSetting; doc.Print()",src:"Building Coder blog; Revit API Forum"},
+  {cat:"Drawing & Documentation Generation",name:"Export schedules to custom formats",w:"Light",desc:"Read ViewSchedule data and output in company-specific formats (Excel, CSV, JSON) for ERP, cost management, or reporting integration.",inp:"RVT",out:"XLSX / CSV / JSON",mech:"ViewSchedule.GetCellText(); custom serialization",src:"Building Coder (nightly data extraction); Revit API Forum"},
+  {cat:"Agentic & MCP Integration",name:"Revit automation via MCP server",w:"Varies",desc:"An AI assistant (Claude, VS Code Copilot) orchestrates Revit WorkItems via a Model Context Protocol (MCP) remote server. Enables describe-and-do Revit automation workflows. Published February 2026 as a proof-of-concept — the first official Autodesk sample demonstrating agentic orchestration of the Automation API.",inp:"Natural language task + ACC model reference",out:"WorkItem result + modified RVT",mech:".NET MCP server (SSE); RevitAutomationTools; SSA token auth",src:"aps-sample-mcp-server-revit-automation (Feb 2026)"},
+]},
+"AutoCAD":{color:"var(--autocad)",scripting:"C# .NET ObjectARX (AcDbMgd.dll) · AutoLISP (core only — no vla-*) · C++ CRX",caps:[
+  {cat:"File I/O",name:"Open DWG file",w:"Light",desc:"Open an AutoCAD DWG file from OSS/BIM360 working directory for processing.",inp:"DWG",out:"—",mech:"Via AutoCAD core engine; AcDbMgd.dll",src:"Multiple AutoCAD DA samples; forge.learning tutorial"},
+  {cat:"File I/O",name:"Create new DWG file",w:"Light",desc:"Create a brand-new DWG drawing from scratch — starting from a template (.dwt) or blank document.",inp:"DWT (optional)",out:"DWG",mech:"new Database(); db.SaveAs()",src:"AutoCAD API documentation"},
+  {cat:"File I/O",name:"Save / export DWG",w:"Light",desc:"Save the modified or newly created DWG file as output, optionally in DXF format.",inp:"DWG (in memory)",out:"DWG / DXF",mech:"db.SaveAs(); AutoLISP — (command \"SAVEAS\")",src:"Multiple AutoCAD DA samples"},
+  {cat:"Model Creation",name:"Create geometric entities",w:"Light",desc:"Create all drawing entity types: lines, arcs, circles, polylines, ellipses, splines, hatches, DBText, MText, dimensions, and leaders.",inp:"DWG",out:"DWG (with new entities)",mech:"Line, Arc, Circle, Polyline, DBText, MText classes; (entmake)",src:"AutoCAD API docs; forge.learning UpdateParam"},
+  {cat:"Data Extraction",name:"Read / query existing entities",w:"Light",desc:"Traverse the entity database, filter by type or layer, read coordinates, text content, block attributes, and object properties.",inp:"DWG",out:"JSON / text / custom",mech:"BlockTable; ModelSpace iteration; (ssget), (entget)",src:"AutoCAD API docs; TextExtractApp (AutoCAD 2027 engine repo)"},
+  {cat:"Model Modification",name:"Modify / delete existing entities",w:"Light",desc:"Update entity properties (position, color, layer, text content, geometry), or delete entities from the drawing database. The canonical forge.learning UpdateParam sample.",inp:"DWG",out:"DWG (modified)",mech:"entity.UpgradeOpen(); entity.Erase(); (entmod), (entdel)",src:"forge.learning UpdateParam sample"},
+  {cat:"Model Modification",name:"Layer management",w:"Light",desc:"Create, rename, freeze, lock, or delete drawing layers. Set layer color, linetype, and lineweight — enables automated CAD standards compliance.",inp:"DWG",out:"DWG (modified)",mech:"LayerTable; LayerTableRecord; AutoLISP — (command \"LAYER\")",src:"AutoCAD API docs"},
+  {cat:"Data Extraction",name:"CAD Standards compliance checking",w:"Light",desc:"Check a DWG against defined CAD standards (layer naming, linetype usage, text styles, dimension styles) and report or auto-correct violations. Explicitly listed in official APS documentation.",inp:"DWG + standards definition",out:"Compliance report / corrected DWG",mech:"Custom rules via entity enumeration; AutoLISP",src:"aps.autodesk.com/automation-apis (official docs)"},
+  {cat:"Assembly & Component Operations",name:"Insert blocks with attributes",w:"Light",desc:"Insert block references and set attribute values — e.g. insert a title block and populate project name, number, date fields.",inp:"DWG + block definition",out:"DWG (with inserted blocks)",mech:"BlockReference; AttributeReference; AutoLISP — (command \"INSERT\")",src:"AutoCAD API docs; title block sample pattern"},
+  {cat:"Assembly & Component Operations",name:"Update title block attributes",w:"Light",desc:"Update attribute values in existing title blocks across multiple drawings — revision number, engineer name, date. One of the most-cited AutoCAD DA use cases in official documentation.",inp:"DWG (with title block)",out:"DWG (updated)",mech:"BlockReference iteration; AttributeReference.TextString; (ssget \"X\") + (entmod)",src:"aps.autodesk.com/automation-apis (explicitly listed)"},
+  {cat:"Data Extraction",name:"Extract block and attribute data",w:"Light",desc:"Enumerate all block insertions and extract attribute values — useful for generating parts lists, title block registers, and drawing indexes.",inp:"DWG",out:"CSV / JSON / Excel",mech:"BlockReference; AttributeCollection; (ssget) + (entget)",src:"TextExtractApp (AutoCAD 2027 engine sample repo)"},
+  {cat:"Drawing & Documentation Generation",name:"Plot drawing to PDF",w:"Medium",desc:"Configure plot settings programmatically (paper size, scale, plot area, plot style) and print a DWG layout or model space to PDF. All settings must be provided programmatically — no interactive dialogs.",inp:"DWG",out:"PDF",mech:"PlotInfo; PlotSettings; PlotEngine; AutoLISP — (command \"-PLOT\")",src:"aps.autodesk.com/automation-apis (explicitly listed)"},
+  {cat:"Drawing & Documentation Generation",name:"Export DWG to image (PNG/JPEG)",w:"Medium",desc:"Export AutoCAD drawing views or layouts to raster image formats for thumbnail generation, reporting, or web display.",inp:"DWG",out:"PNG / JPEG",mech:"PlotEngine with raster device; EXPORT command",src:"AutoCAD API docs"},
+  {cat:"Drawing & Documentation Generation",name:"Batch plot multiple drawings",w:"Medium",desc:"Submit multiple WorkItems in parallel — each processing a separate DWG — for large-scale batch plot operations across an entire drawing set.",inp:"Multiple DWGs",out:"Multiple PDFs",mech:"Multiple parallel WorkItem submissions via REST API",src:"APS WorkItem parallel execution architecture"},
+  {cat:"Drawing & Documentation Generation",name:"Purge unused objects",w:"Light",desc:"Purge unused block definitions, layers, linetypes, text styles from a DWG to reduce file size and clean up drawings. Explicitly listed in official APS documentation.",inp:"DWG",out:"DWG (purged)",mech:"db.Purge(); AutoLISP — (command \"PURGE\" \"ALL\" \"\" \"N\")",src:"aps.autodesk.com/automation-apis (explicitly listed)"},
+  {cat:"Scripting & Plugin Execution",name:"Run AutoLISP routines",w:"Light",desc:"Execute AutoLISP (.lsp/.fas) routines. Core functions only — no vla-*/ActiveX COM functions. No GUI or user interaction permitted.",inp:"DWG + .lsp/.fas (in AppBundle)",out:"DWG / text / custom",mech:"AutoLISP (core functions only — no vla-* COM API)",src:"forge.learning AutoLISP bundle structure; TextExtractApp (2027 repo)"},
+  {cat:"Scripting & Plugin Execution",name:"Run .NET ObjectARX plugins",w:"Light",desc:"Load compiled C# or VB.NET plugins using the ObjectARX managed API. AutoCAD 2025 requires .NET 8; AutoCAD 2027 requires .NET 10. Migration from .NET Framework 4.8 required.",inp:"DWG + .NET DLL (in AppBundle)",out:"DWG / custom",mech:"AcDbMgd.dll; AcCoreMgd.dll; .NET 8 (2025) / .NET 10 (2027)",src:"forge.learning; AutoCAD 2027 engine blog"},
+  {cat:"Scripting & Plugin Execution",name:"Run C++ ObjectARX plugins (CRX)",w:"Light",desc:"Load compiled C++ ObjectARX plugins (.crx) for high-performance DWG manipulation.",inp:"DWG + .crx (in AppBundle)",out:"DWG / custom",mech:"C++ ObjectARX SDK",src:"forge.learning; AutoCAD 2027 engine blog"},
+  {cat:"Format Conversion & Export",name:"Convert DWG to DXF",w:"Light",desc:"Export an AutoCAD DWG file to DXF format for interoperability with non-AutoCAD applications.",inp:"DWG",out:"DXF",mech:"db.DxfOut(); AutoLISP — (command \"DXFOUT\")",src:"AutoCAD API docs"},
+]},
+"Inventor":{color:"var(--inventor)",scripting:"C# .NET (Inventor Server API) · iLogic (VB.NET rules embedded in documents)",caps:[
+  {cat:"File I/O",name:"Open part file (IPT)",w:"Light",desc:"Open an Inventor part file for read, modification, or export. Downloaded to working directory from OSS/BIM360 before engine starts.",inp:"IPT",out:"—",mech:"appInv.Documents.Open(filePath)",src:"Multiple Inventor DA samples; aps-run-ilogic"},
+  {cat:"File I/O",name:"Open assembly file (IAM)",w:"Light",desc:"Open an Inventor assembly including all referenced component files. All referenced IPT/IAM files must be present in the working directory.",inp:"IAM + referenced IPT/IAM",out:"—",mech:"appInv.Documents.Open(iamPath)",src:"Inventor DA documentation; aps-run-ilogic"},
+  {cat:"File I/O",name:"Open drawing file (IDW / DWG)",w:"Light",desc:"Open an Inventor drawing file (.idw or .dwg) for view generation, annotation, or export.",inp:"IDW / DWG",out:"—",mech:"appInv.Documents.Open(drawingPath)",src:"Inventor DA drawing samples; iLogic drawing blog"},
+  {cat:"File I/O",name:"Save / export Inventor files",w:"Light",desc:"Save the modified Inventor part, assembly, or drawing file as output for upload back to OSS/BIM360.",inp:"IPT / IAM / IDW (in memory)",out:"IPT / IAM / IDW / DWG",mech:"doc.Save(); doc.SaveAs()",src:"Multiple Inventor DA samples"},
+  {cat:"File I/O",name:"Bulk file migration / version upgrade",w:"Medium",desc:"Open Inventor files from an older version in the current engine and save, upgrading the file format. Scale via parallel WorkItems for mass migration of thousands of files.",inp:"IPT / IAM (older version)",out:"IPT / IAM (upgraded)",mech:"Open with current Inventor engine; auto-upgrades on open",src:"Official Autodesk docs (aps.autodesk.com/automation-apis)"},
+  {cat:"Parameter Operations",name:"Read user and model parameters",w:"Light",desc:"Read all user-defined parameters, model parameters, and reference parameters — name, value, unit, expression, and comment.",inp:"IPT / IAM",out:"JSON / Excel / CSV",mech:"PartComponentDefinition.Parameters; param.Name, param.Value",src:"aps-run-ilogic; Inventor API docs; mod-the-machine blog"},
+  {cat:"Parameter Operations",name:"Write / modify user parameters",w:"Light",desc:"Change user parameter values (numeric, text, boolean) to drive model geometry — the core of Inventor parametric automation. Triggers model regeneration.",inp:"IPT / IAM + parameter data",out:"IPT / IAM (updated geometry)",mech:"param.Expression = newValue; triggers model update",src:"aps-run-ilogic (width/height parameter update sample)"},
+  {cat:"Parameter Operations",name:"Execute iLogic rules",w:"Medium",desc:"Run iLogic rules embedded in documents or from external .iLogicVb files. Cloud version uses ThisDoc.Document (not ActiveDocument). The iLogic Rule Exporter tool aids migration.",inp:"IPT / IAM + optional .iLogicVb file",out:"IPT / IAM (updated per rule logic)",mech:"iLogicVb runtime; rule.Run(); iLogic Rule Exporter tool",src:"aps-run-ilogic; APS blog: prepare-iLogic-rules-for-DA"},
+  {cat:"Parameter Operations",name:"Manage model states (iPart / iAssembly)",w:"Light",desc:"Access iPart/iAssembly configurations and model states. Inventor 2026 adds write access to ModelStatesInEdit for flexible variant design workflows.",inp:"IPT (iPart) / IAM (iAssembly)",out:"IPT / IAM or derived output",mech:"ModelStates; iPart factory; 2026: ModelStatesInEdit, MemberEditScope",src:"Autodesk DevBlog 2026 (ModelStates write access)"},
+  {cat:"Data Extraction",name:"Query and export Bill of Materials",w:"Light",desc:"Access the full Inventor BOM API: query assembly component structure, override quantities, set BOM component types, and export to structured/parts-only/all-parts BOM views. The highest-value Inventor DA use case and a strong candidate for a standalone PLG scope.",inp:"IAM",out:"CSV / Excel / JSON / XML",mech:"BOM object; BOMView (Structured, PartsOnly, AllParts); BOM.Export()",src:"Inventor API help: BOM overview; design-consulting.com.au; official docs"},
+  {cat:"Data Extraction",name:"Read iProperties (design metadata)",w:"Light",desc:"Read and write Inventor iProperties — author, description, part number, material, mass, revision, and custom properties.",inp:"IPT / IAM / IDW",out:"JSON / XML / Excel",mech:"Document.PropertySets; iProperties collection",src:"Inventor API docs; Autodesk DevBlog 2026"},
+  {cat:"Data Extraction",name:"Read mass properties",w:"Medium",desc:"Calculate and extract physical mass properties: mass, volume, surface area, center of gravity, and moments of inertia. Requires geometry computation — Medium compute.",inp:"IPT / IAM",out:"JSON / custom",mech:"PartComponentDefinition.MassProperties; AssemblyComponentDefinition.MassProperties",src:"Inventor API docs (mass properties)"},
+  {cat:"Assembly & Component Operations",name:"Traverse assembly component hierarchy",w:"Light",desc:"Navigate the full assembly tree — access component occurrences, leaf occurrences (parts only), sub-assemblies, skeleton files, and positional references.",inp:"IAM",out:"JSON / CSV (component list)",mech:"AssemblyComponentDefinition.Occurrences; AllLeafOccurrences",src:"design-and-motion.net blog (Assembly hierarchy); Inventor API docs"},
+  {cat:"Drawing & Documentation Generation",name:"Create drawing views",w:"Medium",desc:"Create standard drawing views (base, projected, section, detail, isometric) on drawing sheets from a part or assembly.",inp:"IPT or IAM",out:"IDW",mech:"DrawingDocument; Sheet.DrawingViews.AddBaseView(); AddProjectedView(); AddSectionView()",src:"iLogic drawing automation (Autodesk University); Inventor API docs"},
+  {cat:"Drawing & Documentation Generation",name:"Create and populate drawing sheets",w:"Medium",desc:"Create new sheets, set size (A0–A4, ANSI), add title blocks, and manage sheet properties. Community reports confirm up to ~20 sheets per WorkItem.",inp:"IDW template or empty",out:"IDW",mech:"DrawingDocument.Sheets; Sheet.Title; Sheet.DrawingViews",src:"Assembly hierarchy blog; Inventor API docs"},
+  {cat:"Drawing & Documentation Generation",name:"Add annotations, dimensions, parts lists",w:"Medium",desc:"Add drawing annotations, dimensions (linear, angular, radial), and parts lists (BOM table). Inventor 2026 adds sketch-based break lines and ID tag placement APIs.",inp:"IDW (with views)",out:"IDW (annotated)",mech:"Dimension objects; PartsListObject; LeaderNote; RevisionTable",src:"Autodesk DevBlog 2026; Inventor API docs"},
+  {cat:"Assembly & Component Operations",name:"Automate assembly simplification",w:"Heavy",desc:"New in Inventor 2026: use the Simplify environment API to programmatically simplify assembly geometry — reducing polygon count for downstream manufacturing validation or visualisation. Requires Inventor 2026 engine.",inp:"IAM",out:"IAM (simplified)",mech:"SimplifyFeatures (Inventor 2026: ComponentDefinition.Features.SimplifyFeatures)",src:"Autodesk DevBlog 2026 (Simplify environment API announcement)"},
+  {cat:"Format Conversion & Export",name:"Export to STEP",w:"Medium",desc:"Export Inventor part or assembly to STEP format (ISO 10303) for interoperability with other CAD systems and PLM platforms.",inp:"IPT / IAM",out:"STEP (.stp)",mech:"TranslatorAddIn; doc.SaveAs() with STEP translator",src:"Inventor API docs"},
+  {cat:"Format Conversion & Export",name:"Export to IFC4x3 (Inventor 2026+)",w:"Medium",desc:"New in Inventor 2026: export assemblies to IFC4x3 preserving assembly structure and metadata. Previously, entire assemblies were flattened to a single solid — now structure is fully preserved. Requires Inventor 2026 engine.",inp:"IAM",out:"IFC4x3",mech:"IFC4x3 export translator (Inventor 2026); automate naming, folder output, classification",src:"Autodesk DevBlog 2026 (IFC4x3 announcement for Inventor API)"},
+  {cat:"Format Conversion & Export",name:"Export to OBJ, STL, SAT",w:"Medium",desc:"Export Inventor geometry to neutral 3D mesh formats: OBJ (visualisation), STL (3D printing), SAT (ACIS kernel format).",inp:"IPT / IAM",out:"OBJ / STL / SAT",mech:"TranslatorAddIn; doc.SaveAs() with respective format translator",src:"Inventor API docs; APS Inventor DA documentation"},
+  {cat:"Format Conversion & Export",name:"Export to PDF",w:"Medium",desc:"Export Inventor drawing sheets to PDF for documentation distribution.",inp:"IDW",out:"PDF",mech:"PDF translator via PrintManager or SaveAs with PDF AddIn",src:"Inventor API docs"},
+]},
+"3ds Max":{color:"var(--dsmax)",scripting:"MAXScript (.ms · primary) · Python (pymxs) · .NET C# (dotNetClass) · C++ — broadest scripting support of all engines",caps:[
+  {cat:"File I/O",name:"Open 3ds Max scene file",w:"Medium",desc:"Open an existing .MAX scene file from OSS/BIM360 working directory, loading all objects, materials, lights, cameras, and animations.",inp:"MAX",out:"—",mech:"loadMaxFile filePath; MaxInterfaces.COREInterface.LoadFromFile()",src:"forge.learning 3ds Max AppBundle guide; APS 3ds Max DA blog"},
+  {cat:"File I/O",name:"Create / save MAX scene",w:"Light",desc:"Create a new 3ds Max scene from scratch or save a modified scene to the output directory.",inp:"MAX (optional template)",out:"MAX",mech:"saveMaxFile filePath; MaxInterfaces.COREInterface.SaveToFile()",src:"forge.learning; APS 3ds Max DA docs"},
+  {cat:"File I/O",name:"Import third-party 3D formats",w:"Medium",desc:"Import geometry and scene data from many supported 3D formats — FBX, OBJ, DWG, DXF, DAE (Collada), STL, 3DS, and others. One of the largest import format libraries of any 3D application.",inp:"FBX / OBJ / DWG / DXF / DAE / STL / 3DS",out:"—",mech:"importFile filePath; format-specific import options",src:"3ds Max API docs; APS 3ds Max DA overview"},
+  {cat:"Model Creation",name:"Create and modify geometry",w:"Medium",desc:"Create 3D geometry primitives (box, sphere, cylinder, plane) and modify using editable mesh or editable poly — vertex/edge/face manipulation, sub-object editing.",inp:"MAX or import formats",out:"MAX",mech:"Box(); Sphere(); convertTo mesh; polyOp.*; .NET — MaxInterfaces",src:"3ds Max API docs; MAXScript reference"},
+  {cat:"Model Modification",name:"Apply non-destructive modifiers",w:"Medium",desc:"Apply modifiers (Bend, Twist, Noise, TurboSmooth, Shell, Symmetry) via the modifier stack — non-destructive parametric modifications.",inp:"MAX",out:"MAX",mech:"addModifier obj (Bend()); .NET — MaxInterfaces",src:"3ds Max API docs; Wikipedia 3ds Max"},
+  {cat:"Model Modification",name:"Boolean operations",w:"Medium",desc:"Perform Boolean operations (Union, Subtraction, Intersection) between 3D objects — for geometry cleanup, hole creation, or combining shapes.",inp:"MAX",out:"MAX",mech:"Boolean compound object; ProBoolean",src:"3ds Max API docs"},
+  {cat:"Model Modification",name:"Mesh optimization / simplification",w:"Heavy",desc:"Reduce polygon count using ProOptimizer or MultiRes modifiers — essential for real-time visualisation, game engines, or web delivery. Compute-intensive; depends on scene complexity.",inp:"MAX / imported mesh formats",out:"MAX / export formats",mech:"ProOptimizer modifier; percentage vertex reduction",src:"APS 3ds Max DA overview (optimization explicitly mentioned)"},
+  {cat:"Model Modification",name:"Assign and modify materials",w:"Light",desc:"Assign materials (Standard, Physical, Arnold) to scene objects; modify properties (color, reflectivity, roughness, metalness); create material libraries.",inp:"MAX",out:"MAX",mech:"mat = StandardMaterial(); obj.material = mat; getClassInstances Physical_Material",src:"3ds Max API docs; MAXScript reference"},
+  {cat:"Model Modification",name:"UV mapping and texture management",w:"Medium",desc:"Apply and modify UV mapping coordinates — planar, cylindrical, spherical, box projection; UV relaxation and unwrapping for texture baking workflows.",inp:"MAX",out:"MAX",mech:"UVWMap modifier; uvwMap.maptype",src:"3ds Max API docs (UV texture workflow)"},
+  {cat:"Rendering & Visualisation",name:"Batch render scene to image",w:"Heavy",desc:"Render 3D scenes to raster image outputs (PNG, JPEG, EXR, TGA, BMP) using the active renderer. The most compute-intensive operation in the entire Automation API — render time varies enormously by scene complexity, resolution, and renderer (Arnold vs Scanline vs ART).",inp:"MAX",out:"PNG / JPEG / EXR / TGA / BMP",mech:"render camera:activeCam output:bitmap; MaxInterfaces.Global.Render()",src:"APS 3ds Max DA overview (rendering use case explicitly mentioned)"},
+  {cat:"Rendering & Visualisation",name:"Configure render settings",w:"Light",desc:"Set render parameters: output resolution, renderer choice (Arnold, ART, Scanline), camera selection, render passes, output file format and path.",inp:"MAX",out:"Rendered image",mech:"renderers.current = Arnold_Renderer(); renderWidth/Height; rendOutputFilename",src:"3ds Max API docs; MAXScript reference"},
+  {cat:"Rendering & Visualisation",name:"Animation rendering (frame sequences)",w:"Heavy",desc:"Render multiple frames from an animated scene — enabling automated turntable animations, product preview videos, and design review animations as image sequences.",inp:"MAX (with animation)",out:"Image sequence (PNG / JPEG / EXR)",mech:"animate on; render range:#range start:0 end:100",src:"3ds Max API docs"},
+  {cat:"Assembly & Component Operations",name:"Scene object hierarchy manipulation",w:"Light",desc:"Access and modify the scene object hierarchy — parent/child relationships, group management, layer assignment, object visibility, and transforms (position, rotation, scale).",inp:"MAX",out:"MAX",mech:"obj.parent; group objects; setTransform; in layer; obj.isHidden",src:"3ds Max API docs; Scene Explorer API"},
+  {cat:"Assembly & Component Operations",name:"Camera and light management",w:"Light",desc:"Create, modify, and position cameras and lights — focal length, target point, light color, intensity, and shadow settings for render preparation.",inp:"MAX",out:"MAX",mech:"FreeCamera(); TargetCamera(); OmniLight(); light.rgb; light.multiplier",src:"3ds Max API docs"},
+  {cat:"Format Conversion & Export",name:"Export to FBX",w:"Medium",desc:"Export 3ds Max scenes to FBX for delivery to game engines (Unity, Unreal), visualisation platforms, and downstream 3D workflows.",inp:"MAX",out:"FBX",mech:"exportFile filePath using:FBXEXP",src:"3ds Max API docs"},
+  {cat:"Format Conversion & Export",name:"Export to OBJ, STL, DXF",w:"Medium",desc:"Export geometry to neutral 3D formats: OBJ (wavefront), STL (3D printing), DXF (AutoCAD interchange).",inp:"MAX",out:"OBJ / STL / DXF",mech:"exportFile filePath using:ObjExp / STLExport",src:"3ds Max API docs"},
+  {cat:"Format Conversion & Export",name:"Publish to web-ready formats",w:"Medium",desc:"Export or publish 3ds Max content for display in the Autodesk Viewer or third-party web platforms — enabling online product configurators. Typically chains DA output with the Model Derivative API.",inp:"MAX",out:"SVF/SVF2 / glTF (via Model Derivative API)",mech:"MAXScript export + Model Derivative API translation (client app)",src:"APS 3ds Max DA overview (publishing explicitly mentioned)"},
+  {cat:"Scripting & Plugin Execution",name:"Run MAXScript (.ms files)",w:"Varies",desc:"Execute MAXScript to orchestrate any 3ds Max operation. MAXScript is the primary automation interface for the 3ds Max DA engine. Can call .NET plugin classes via dotNetClass().",inp:"MAX + .ms file (in AppBundle)",out:"MAX or any export format",mech:"fileIn scriptPath; fn AutomationScript = ... executed by engine",src:"forge.learning 3ds Max AppBundle guide (da_script.ms)"},
+  {cat:"Scripting & Plugin Execution",name:"Run Python scripts",w:"Varies",desc:"Execute Python scripts in 3ds Max for automation — an alternative to MAXScript for developers who prefer Python syntax.",inp:"MAX + .py file",out:"MAX or custom output",mech:"Python — pymxs module",src:"forge.learning 3ds Max AppBundle guide (Python listed as supported)"},
+  {cat:"Scripting & Plugin Execution",name:"Load and run .NET / C++ plugins",w:"Varies",desc:"Load compiled .NET (C#) or C++ plugins into the 3ds Max DA engine and execute automation via MAXScript's dotNetClass() binding.",inp:"MAX + .NET DLL or C++ plugin (in AppBundle)",out:"MAX or custom",mech:"dotNetClass(\"Namespace.ClassName\"); da = dotNetClass(...); da.Method()",src:"forge.learning 3ds Max guide (dotNetClass MAXScript integration example)"},
+]},
+"Fusion":{color:"var(--fusion)",scripting:"TypeScript ONLY on cloud engine (Python/C++ supported on desktop but NOT in cloud DA)",caps:[
+  {cat:"File I/O",name:"Read native Fusion designs (F3D)",w:"Light",desc:"Open and read native Fusion design files (.f3d) stored in a user's Fusion Team hub — accessing geometry, component structure, parameters, sketches, features, and assemblies.",inp:"F3D (from Fusion Team hub)",out:"Custom output (JSON / file)",mech:"adsk.fusion.Design; RootComponent; BRepBodies; Sketches; Parameters",src:"APS Fusion DA blog (Feb + May 2025); Fusion Developer API docs"},
+  {cat:"File I/O",name:"Write / store to Fusion Team hub",w:"Light",desc:"Store automation outcomes directly back to the user's Fusion Team hub for version-controlled storage. Automation jobs operate with live user credentials on actual Fusion Team projects.",inp:"F3D (modified in memory)",out:"F3D in Fusion Team hub",mech:"Fusion cloud data access via user credentials (3-legged OAuth); DataFiles; DataFolders",src:"APS beta blog: store automation outcomes directly in your Fusion Team hub"},
+  {cat:"File I/O",name:"Parallel job execution",w:"Varies",desc:"Submit multiple Fusion Automation WorkItems simultaneously to process designs in parallel — dramatically reducing throughput time for batch operations vs sequential desktop processing.",inp:"Multiple F3D files",out:"Multiple processed outputs",mech:"Multiple WorkItem submissions via REST API; Fusion DA server-side parallelism",src:"APS beta blog: run multiple automation jobs simultaneously"},
+  {cat:"Format Conversion & Export",name:"Read third-party CAD files",w:"Medium",desc:"Import and read CAD files from third-party formats supported by Fusion (STEP, IGES, OBJ, STL, DXF, DWG) for analysis, conversion, or integration into Fusion designs.",inp:"STEP / IGES / OBJ / STL / DXF / DWG",out:"F3D or analysis output",mech:"TypeScript — Fusion import utilities; ImportManager",src:"APS blog: Read and analyze native Fusion designs or third-party CAD files"},
+  {cat:"Model Creation",name:"Sketching",w:"Light",desc:"Create and modify 2D sketches — add sketch geometry (lines, arcs, circles, splines), apply constraints (coincident, tangent, parallel, perpendicular), add dimensions.",inp:"F3D",out:"F3D (with new sketches)",mech:"Sketches.add(); SketchLines; SketchArcs; GeometricConstraints; SketchDimensions",src:"Fusion Developer API docs; APS blog (sketching mentioned in capability list)"},
+  {cat:"Model Creation",name:"3D solid/surface modeling",w:"Medium",desc:"Create and modify 3D solid bodies (extrude, revolve, sweep, loft, shell, combine, chamfer, fillet) and surface bodies using the full Fusion B-Rep modeling kernel.",inp:"F3D",out:"F3D",mech:"ExtrudeFeatures.add(); RevolveFeatures; SweepFeatures; FilletFeatures; etc.",src:"Fusion Developer API docs (full feature list)"},
+  {cat:"Model Modification",name:"Mesh editing",w:"Medium",desc:"Create, import, and modify mesh bodies — for additive manufacturing preparation, scan data processing, or visualisation optimisation.",inp:"F3D / STL / OBJ",out:"F3D / STL / OBJ",mech:"MeshBodies; MeshBody; mesh editing operations",src:"APS beta blog: mesh editing listed in capability summary"},
+  {cat:"Assembly & Component Operations",name:"Assembly design and component management",w:"Medium",desc:"Create and manage multi-component assemblies — add components, set joints (rigid, revolute, slider, cylindrical, planar), define constraints, and manage component hierarchy.",inp:"F3D",out:"F3D",mech:"Occurrences.addNewComponent(); Joints.add(); JointMotion; RigidGroup",src:"Fusion Developer API docs; APS blog (assemblies mentioned)"},
+  {cat:"Parameter Operations",name:"Parameter-driven design and product configurator",w:"Light",desc:"Read and modify design parameters to drive geometry changes — enabling automated product configurators, variant generation, and mass customisation workflows. The Fusion Configurator Demo (source code publicly available on APS GitHub) demonstrates this pattern.",inp:"F3D + parameter values (JSON/input)",out:"F3D (parametric variant)",mech:"Design.allParameters; UserParameters; param.expression = newValue",src:"Fusion Configurator Demo (APS GitHub — source code available); APS GA blog"},
+  {cat:"CAM & Manufacturing",name:"CAM toolpath generation",w:"Heavy",desc:"Automate CAM programming for CNC machining — create setups, select operations (2D contour, adaptive clearing, drilling, 3D surfacing), assign tools, and generate toolpaths headlessly. Toolpath.com is a confirmed production adopter.",inp:"F3D (with machined geometry)",out:"F3D (with CAM data)",mech:"TypeScript — CAM object; Setups; Operations; ToolpathGenerations",src:"APS GA blog (CAM programming use case); Toolpath.com integration showcase"},
+  {cat:"CAM & Manufacturing",name:"Post-processing (NC code generation)",w:"Medium",desc:"Run the CAM post-processor to generate machine-specific NC code from Fusion toolpaths — enabling automated quoting and manufacturing pipeline integration.",inp:"F3D (with CAM setups and toolpaths)",out:"NC code (.nc / .tap / machine-specific)",mech:"TypeScript — CAM.postProcess(); PostProcessInput; postConfiguration",src:"APS GA blog (post-processing mentioned); Toolpath.com integration"},
+  {cat:"CAM & Manufacturing",name:"2D flat pattern nesting",w:"Heavy",desc:"Automate 2D nesting of flat patterns (sheet metal, fabric) to minimise material waste using Fusion's built-in nesting algorithms.",inp:"F3D (with flat pattern bodies)",out:"F3D (nested layout) / DXF",mech:"TypeScript — Nesting API; 2D nesting configuration",src:"APS beta blog: 2D and 3D nesting explicitly listed; APS GA blog (TrueShape packer)"},
+  {cat:"CAM & Manufacturing",name:"3D additive manufacturing packing (TrueShape)",w:"Heavy",desc:"Automate 3D packing of parts for additive builds (SLS, MJF, SLA) using Fusion's industry-leading TrueShape packer — maximise parts per build, minimise support material. Authentise (additive MES platform) is a confirmed production adopter.",inp:"F3D (with 3D bodies)",out:"F3D (packed build layout) / export formats",mech:"TypeScript — 3D Nesting/Packing API; TrueShape packer",src:"APS GA blog: TrueShape packer explicitly mentioned; Authentise integration"},
+  {cat:"CAM & Manufacturing",name:"Integrate with PLM/PDM/MES",w:"Light",desc:"Connect Fusion Automation outputs to enterprise systems (PLM, PDM, MES) via the cloud API architecture and webhook callbacks.",inp:"F3D + external system data",out:"Modified F3D + system integration payload",mech:"TypeScript + webhook callbacks; REST API calls in onComplete; ACC Data Management API",src:"APS GA blog: Integrate Automation API for Fusion into PLM, PDM, or MES workflows"},
+]},
 };
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let currentEngine = "Revit";
-let selectedCap = null;
-let activeFilters = new Set();
-let currentView = "grid";
-let activeCat = "All";
+// ─── State ────────────────────────────────────────────────────────────────────
+let eng = "Revit", activeCat = "All", activeFilters = new Set(), view = "grid", selectedCap = null;
 
-// ── Category list ─────────────────────────────────────────────────────────────
 const CAT_ORDER = ["All","File I/O","Parameter Operations","Data Extraction","Model Creation","Model Modification","Drawing & Documentation Generation","Format Conversion & Export","Rendering & Visualisation","CAM & Manufacturing","Assembly & Component Operations","Scripting & Plugin Execution","Agentic & MCP Integration"];
 
-function getCaps(){
-  return ENGINES[currentEngine].caps;
-}
-
-function getFilteredCaps(){
+function caps()     { return ENGINES[eng].caps; }
+function filtered() {
   const q = document.getElementById('search').value.toLowerCase().trim();
-  return getCaps().filter(c=>{
-    const matchWeight = activeFilters.size===0 || activeFilters.has(c.w.toLowerCase().split('/')[0].trim());
-    const matchCat = activeCat==="All" || c.cat===activeCat;
-    const matchQ = !q || c.name.toLowerCase().includes(q) || c.cat.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q);
-    return matchWeight && matchCat && matchQ;
+  return caps().filter(c => {
+    const wk = c.w.toLowerCase().split('/')[0].trim();
+    const mW  = !activeFilters.size || activeFilters.has(wk);
+    const mC  = activeCat === "All" || c.cat === activeCat;
+    const mQ  = !q || c.name.toLowerCase().includes(q) || c.cat.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q) || c.src.toLowerCase().includes(q);
+    return mW && mC && mQ;
   });
 }
 
-// ── Engine switch ─────────────────────────────────────────────────────────────
-function setEngine(eng, el){
-  currentEngine = eng;
-  activeCat = "All";
-  selectedCap = null;
-  document.querySelectorAll('.etab').forEach(t=>t.classList.remove('active'));
+// ─── Engine switch ────────────────────────────────────────────────────────────
+function setEngine(e, el) {
+  eng = e; activeCat = "All"; selectedCap = null;
+  document.querySelectorAll('.etab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   closeDetail();
   renderSidebar();
   renderContent();
 }
 
-// ── View toggle ───────────────────────────────────────────────────────────────
-function setView(v){
-  currentView = v;
-  document.getElementById('vt-grid').classList.toggle('active', v==='grid');
-  document.getElementById('vt-list').classList.toggle('active', v==='list');
+// ─── View / filters ───────────────────────────────────────────────────────────
+function setView(v) {
+  view = v;
+  document.getElementById('vt-grid').classList.toggle('active', v === 'grid');
+  document.getElementById('vt-list').classList.toggle('active', v === 'list');
   renderContent();
 }
-
-// ── Filter toggle ─────────────────────────────────────────────────────────────
-function toggleFilter(w){
-  if(activeFilters.has(w)) activeFilters.delete(w);
-  else activeFilters.add(w);
-  ['light','medium','heavy','varies'].forEach(x=>{
-    const btn = document.getElementById('f-'+x);
-    btn.className = 'filter-btn' + (activeFilters.has(x)?' active-'+x:'');
+function toggleFilter(w) {
+  activeFilters.has(w) ? activeFilters.delete(w) : activeFilters.add(w);
+  ['light','medium','heavy','varies'].forEach(x => {
+    document.getElementById('fc-'+x).classList.toggle('on', activeFilters.has(x));
   });
   renderContent();
 }
 
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-function renderSidebar(){
-  const caps = getCaps();
-  const counts = {};
-  caps.forEach(c=>{ counts[c.cat]=(counts[c.cat]||0)+1; });
-  counts["All"] = caps.length;
-
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const counts = { All: caps().length };
+  caps().forEach(c => { counts[c.cat] = (counts[c.cat] || 0) + 1; });
   const sb = document.getElementById('sidebar');
-  const cats = CAT_ORDER.filter(c=> c==="All" || counts[c]);
-  sb.innerHTML = `<div class="sidebar-label">Categories</div>` +
-    cats.map(c=>`
-      <button class="cat-btn${activeCat===c?' active':''}" onclick="setCategory('${c.replace(/'/g,"\\'")}')">
-        <span class="cat-dot"></span>
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c}</span>
-        <span class="cat-count">${counts[c]||0}</span>
-      </button>
-    `).join('');
+  sb.innerHTML = '<div class="sidebar-section"><div class="sidebar-label">Categories</div>' +
+    CAT_ORDER.filter(c => c === "All" || counts[c]).map(c => `
+      <button class="cat-btn${activeCat === c ? ' active' : ''}" onclick="setCategory(${JSON.stringify(c)})">
+        <span class="cat-btn-label">${c}</span>
+        <span class="cat-count">${counts[c] || 0}</span>
+      </button>`).join('') + '</div>';
 }
-
-function setCategory(cat){
-  activeCat = cat;
-  selectedCap = null;
+function setCategory(cat) {
+  activeCat = cat; selectedCap = null;
   closeDetail();
-  document.querySelectorAll('.cat-btn').forEach(b=>{
-    b.classList.toggle('active', b.textContent.trim().startsWith(cat.trim().substring(0,10)));
-  });
   renderSidebar();
   renderContent();
 }
 
-// ── Weight pill HTML ──────────────────────────────────────────────────────────
-function wPill(w, large=false){
-  const key = w.toLowerCase().includes('light')?'light':w.toLowerCase().includes('medium')?'medium':w.toLowerCase().includes('heavy')?'heavy':'varies';
-  const cls = large?'weight-badge-lg':'weight-pill w-'+key;
-  return `<span class="${cls} w-${key}">${w}</span>`;
+// ─── Weight badge ─────────────────────────────────────────────────────────────
+function wBadge(w) {
+  const cls = w.toLowerCase().includes('light') ? 'wb-light' : w.toLowerCase().includes('medium') ? 'wb-medium' : w.toLowerCase().includes('heavy') ? 'wb-heavy' : 'wb-varies';
+  return `<span class="wbadge ${cls}">${w}</span>`;
 }
 
-// ── Main content render ───────────────────────────────────────────────────────
-function renderContent(){
-  const filtered = getFilteredCaps();
-  document.getElementById('result-count').textContent = `${filtered.length} of ${getCaps().length} capabilities`;
-
+// ─── Content ──────────────────────────────────────────────────────────────────
+function renderContent() {
+  const fc = filtered();
+  document.getElementById('result-count').textContent = `${fc.length} of ${caps().length}`;
   const el = document.getElementById('content');
 
-  if(filtered.length===0){
-    el.innerHTML = `<div class="empty"><div class="empty-icon">⌕</div><div class="empty-title">No capabilities match</div><div class="empty-sub">Try adjusting your search or filters</div></div>`;
+  const e = ENGINES[eng];
+  const wc = {Light:0, Medium:0, Heavy:0, Varies:0};
+  caps().forEach(c => { const k = c.w.includes('Light') ? 'Light' : c.w.includes('Medium') ? 'Medium' : c.w.includes('Heavy') ? 'Heavy' : 'Varies'; wc[k]++; });
+
+  const meta = `<div class="engine-meta">
+    <div class="em-item">
+      <div class="em-label">Engine</div>
+      <div class="em-val" style="color:${e.color};font-weight:700">${eng}</div>
+    </div>
+    <div class="em-item">
+      <div class="em-label">Scripting</div>
+      <div class="em-val mono">${e.scripting}</div>
+    </div>
+    <div class="em-item">
+      <div class="em-label">Capabilities</div>
+      <div class="em-val" style="font-weight:700">${caps().length}</div>
+    </div>
+    <div class="em-item">
+      <div class="em-label">Light</div>
+      <div class="em-val" style="color:var(--light-fg);font-weight:600">${wc.Light}</div>
+    </div>
+    <div class="em-item">
+      <div class="em-label">Medium</div>
+      <div class="em-val" style="color:var(--medium-fg);font-weight:600">${wc.Medium}</div>
+    </div>
+    <div class="em-item">
+      <div class="em-label">Heavy</div>
+      <div class="em-val" style="color:var(--heavy-fg);font-weight:600">${wc.Heavy}</div>
+    </div>
+    ${wc.Varies ? `<div class="em-item"><div class="em-label">Varies</div><div class="em-val" style="color:var(--varies-fg);font-weight:600">${wc.Varies}</div></div>` : ''}
+  </div>`;
+
+  if (!fc.length) {
+    el.innerHTML = `<div class="content-inner">${meta}<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">No results found</div><div class="empty-sub">Try adjusting your search terms or clearing filters</div><button class="empty-btn" onclick="clearAll()">Clear all filters</button></div></div>`;
     return;
   }
 
-  // Engine info bar
-  const eng = ENGINES[currentEngine];
-  const counts = {Light:0,Medium:0,Heavy:0,Varies:0};
-  getCaps().forEach(c=>{ const k=c.w.split('/')[0].trim(); if(counts[k]!==undefined) counts[k]++; else counts.Varies++; });
-  const infoBar = `<div class="engine-info">
-    <div class="ei-item"><div class="ei-label">Scripting</div><div class="ei-val" style="font-size:11px">${eng.scripting}</div></div>
-    <div class="ei-divider"></div>
-    <div class="ei-item"><div class="ei-label">Total</div><div class="ei-val" style="color:${eng.color}">${getCaps().length} caps</div></div>
-    <div class="ei-divider"></div>
-    <div class="ei-item"><div class="ei-label">Light</div><div class="ei-val" style="color:var(--light-fg)">${counts.Light}</div></div>
-    <div class="ei-item"><div class="ei-label">Medium</div><div class="ei-val" style="color:var(--medium-fg)">${counts.Medium}</div></div>
-    <div class="ei-item"><div class="ei-label">Heavy</div><div class="ei-val" style="color:var(--heavy-fg)">${counts.Heavy}</div></div>
-    ${counts.Varies>0?`<div class="ei-item"><div class="ei-label">Varies</div><div class="ei-val" style="color:var(--varies-fg)">${counts.Varies}</div></div>`:''}
-  </div>`;
-
-  if(currentView==='grid'){
-    // Group by category
+  if (view === 'grid') {
     const groups = {};
-    filtered.forEach(c=>{ if(!groups[c.cat]) groups[c.cat]=[]; groups[c.cat].push(c); });
-    const orderedCats = CAT_ORDER.filter(c=>groups[c]);
-
-    const html = orderedCats.map(cat=>`
-      <div class="section-header">
-        <div class="section-title">${cat} <span class="section-count">${groups[cat].length}</span></div>
+    fc.forEach(c => { if (!groups[c.cat]) groups[c.cat] = []; groups[c.cat].push(c); });
+    const html = CAT_ORDER.filter(c => groups[c]).map(cat => `
+      <div class="section-hdr">
+        <span class="section-hdr-title">${cat}</span>
+        <span class="section-hdr-count">${groups[cat].length}</span>
+        <span class="section-hdr-line"></span>
       </div>
-      <div class="grid" style="margin-bottom:24px">
-        ${groups[cat].map((cap,i)=>`
-          <div class="cap-card${selectedCap===cap?' selected':''}" 
-               onclick="showDetail(${JSON.stringify(cap).replace(/"/g,'&quot;')})"
-               style="animation-delay:${i*0.02}s">
+      <div class="grid" style="margin-bottom:8px">
+        ${groups[cat].map((cap, i) => `
+          <div class="cap-card${selectedCap === cap ? ' selected' : ''}"
+               onclick='showDetail(${JSON.stringify(cap).replace(/'/g, "&#39;")})'
+               style="animation-delay:${i * 0.025}s">
             <div class="card-top">
               <div class="card-name">${cap.name}</div>
-              ${wPill(cap.w)}
+              ${wBadge(cap.w)}
             </div>
             <div class="card-desc">${cap.desc}</div>
             <div class="card-footer">
-              <span class="io-tag">in: ${cap.inp.length>22?cap.inp.substring(0,22)+'…':cap.inp}</span>
-              <span class="io-tag">out: ${cap.out.length>18?cap.out.substring(0,18)+'…':cap.out}</span>
+              <span class="io-chip">↓ ${cap.inp.length > 20 ? cap.inp.substring(0,20)+'…' : cap.inp}</span>
+              <span class="io-chip">↑ ${cap.out.length > 16 ? cap.out.substring(0,16)+'…' : cap.out}</span>
             </div>
-          </div>
-        `).join('')}
-      </div>
-    `).join('');
-    el.innerHTML = infoBar + html;
-
+          </div>`).join('')}
+      </div>`).join('');
+    el.innerHTML = `<div class="content-inner">${meta}${html}</div>`;
   } else {
-    // List view
-    const header = `<div class="list-item" style="cursor:default;opacity:.6;padding:6px 14px">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:var(--mono)">Capability</div>
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:var(--mono)">Source</div>
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:var(--mono);text-align:center">Weight</div>
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);font-family:var(--mono)">I/O</div>
-    </div>`;
-    const rows = filtered.map(cap=>`
-      <div class="list-item${selectedCap===cap?' selected':''}" onclick="showDetail(${JSON.stringify(cap).replace(/"/g,'&quot;')})">
-        <div>
-          <div class="li-name">${cap.name}</div>
-          <div class="li-cat">${cap.cat}</div>
-        </div>
-        <div class="li-source">${cap.src}</div>
-        <div class="li-weight">${wPill(cap.w)}</div>
-        <div class="li-io">${cap.inp.substring(0,16)} → ${cap.out.substring(0,12)}</div>
-      </div>
-    `).join('');
-    el.innerHTML = infoBar + `<div class="list-view">${header}${rows}</div>`;
+    const rows = fc.map(cap => `
+      <div class="list-row${selectedCap === cap ? ' selected' : ''}"
+           onclick='showDetail(${JSON.stringify(cap).replace(/'/g, "&#39;")})'>
+        <div><div class="lr-name">${cap.name}</div><div class="lr-cat">${cap.cat}</div></div>
+        <div class="lr-input">${cap.inp}</div>
+        <div class="lr-output">${cap.out}</div>
+        <div>${wBadge(cap.w)}</div>
+      </div>`).join('');
+    el.innerHTML = `<div class="content-inner">${meta}
+      <div class="list-hdr"><div>Capability</div><div>Input</div><div>Output</div><div>Weight</div></div>
+      <div class="cap-list">${rows}</div></div>`;
   }
 }
 
-// ── Detail panel ──────────────────────────────────────────────────────────────
-function showDetail(cap){
-  if(typeof cap === 'string') cap = JSON.parse(cap);
+// ─── Detail panel ─────────────────────────────────────────────────────────────
+function showDetail(cap) {
+  if (typeof cap === 'string') cap = JSON.parse(cap);
   selectedCap = cap;
-  const eng = ENGINES[currentEngine];
-  const panel = document.getElementById('detail-panel');
-  panel.classList.remove('hidden');
-
-  const wKey = cap.w.toLowerCase().includes('light')?'light':cap.w.toLowerCase().includes('medium')?'medium':cap.w.toLowerCase().includes('heavy')?'heavy':'varies';
-
-  document.getElementById('dp-inner').innerHTML = `
-    <div class="dp-close">
-      <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">Detail</span>
+  const e = ENGINES[eng];
+  document.getElementById('detail-panel').classList.remove('hidden');
+  document.getElementById('dp-body').innerHTML = `
+    <div class="dp-close-row">
+      <span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Capability Detail</span>
       <button class="dp-close-btn" onclick="closeDetail()">✕ Close</button>
     </div>
-    <div class="dp-engine-tag" style="color:${eng.color}">${currentEngine} · ${cap.cat}</div>
+    <div class="dp-engine-label" style="color:${e.color}">${eng}</div>
     <div class="dp-title">${cap.name}</div>
-    ${wPill(cap.w, true)}
-    <div class="dp-divider"></div>
-    <div class="dp-field">
-      <div class="dp-field-label">Description</div>
-      <div class="dp-field-val">${cap.desc}</div>
+    ${wBadge(cap.w)}
+    <div class="dp-cat-label" style="margin-top:10px">
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+      ${cap.cat}
     </div>
-    <div class="dp-io-row">
+    <div class="dp-divider"></div>
+    <div class="dp-section-label">Description</div>
+    <div class="dp-text">${cap.desc}</div>
+    <div class="dp-io-grid">
       <div class="dp-io-box">
-        <div class="dp-io-label">Input</div>
+        <div class="dp-io-lbl">Input format</div>
         <div class="dp-io-val">${cap.inp}</div>
       </div>
       <div class="dp-io-box">
-        <div class="dp-io-label">Output</div>
+        <div class="dp-io-lbl">Output format</div>
         <div class="dp-io-val">${cap.out}</div>
       </div>
     </div>
-    <div class="dp-divider"></div>
-    <div class="dp-field">
-      <div class="dp-field-label">Code Mechanism</div>
-      <div class="dp-field-mono">${cap.mech}</div>
-    </div>
-    <div class="dp-divider"></div>
-    <div class="dp-field">
-      <div class="dp-field-label">Primary Source</div>
-      <div class="dp-source">${cap.src}</div>
-    </div>
-  `;
+    <div class="dp-section-label">Code mechanism</div>
+    <div class="dp-code">${cap.mech}</div>
+    <div class="dp-section-label">Primary source</div>
+    <div class="dp-source">
+      <span class="dp-source-icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+      </span>
+      <div class="dp-source-text">${cap.src}</div>
+    </div>`;
 }
 
-function closeDetail(){
+function closeDetail() {
   document.getElementById('detail-panel').classList.add('hidden');
   selectedCap = null;
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
+function clearAll() {
+  document.getElementById('search').value = '';
+  activeFilters.clear();
+  ['light','medium','heavy','varies'].forEach(x => document.getElementById('fc-'+x).classList.remove('on'));
+  renderContent();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
 renderSidebar();
 renderContent();
 </script>
